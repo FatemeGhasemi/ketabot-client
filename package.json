@@ -1,0 +1,25 @@
+{
+  "name": "book-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "array-includes": "^3.0.3",
+    "axios": "^0.17.1",
+    "body-parser": "^1.18.2",
+    "dotenv": "^6.2.0",
+    "express": "^4.15.4",
+    "hapi": "^16.6.2",
+    "hashmap": "^2.3.0",
+    "mongoose": "^4.13.5",
+    "node-telegram-bot-api": "^0.28.0",
+    "redis": "^2.8.0",
+    "request": "^2.81.0",
+    "safe-buffer": "^5.1.1"
+  }
+}
