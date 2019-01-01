@@ -1,7 +1,11 @@
 const translator = require("../translator");
-const downloadBooksParts = "dBP";
 const getBookDetail = "gBD";
 const moreBooksDetails = "mbd";
+const downloadBooksParts = "dBP";
+const moreBookTitle = "mbt";
+const moreBookDetails = "mbd";
+const moreBookCategory = "mbc";
+
 
 
 

@@ -12,10 +12,11 @@ const categoriesArray = [translator.translate("STORY"), translator.translate("FO
     translator.translate("SHORT_STORY"), translator.translate("POEM")];
 
 const getBookDetail = "gBD";
-const downloadBookPart = "dBP";
-const more_book_by_title = "mbt";
-const more_book_by_details = "mbd";
-const more_book_by_category = "mbc";
+const downloadBooksParts = "dBP";
+const moreBookTitle = "mbt";
+const moreBookDetails = "mbd";
+const moreBookCategory = "mbc";
+
 
 
 const showMainMenu = (msg, text) => {
@@ -126,15 +127,15 @@ bot.on("callback_query", async (msg) => {
 
     let callback_data = JSON.parse(msg.data);
     switch (callback_data.type) {
-        case  getBookDetail:
+        case  moreBooksDetails:
             let bookId = callback_data.id;
             let foundBookData = await bookRequest.findBookById(bookId);
             const inLineKeyboard = bookController.buildInLineKeyboardToShowBookParts(foundBookData);
             await userRequests.createUser(msg.from);
-            await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0])
+            await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]);
             break;
 
-        case downloadBookPart:
+        case downloadBooksParts:
             let randomString = callback_data.link;
             let partData = utils.getValueFromMap(randomString);
             bot.getChatMember(process.env.CHAT_ID, msg.from.id).then(async (result) => {
@@ -155,7 +156,7 @@ bot.on("callback_query", async (msg) => {
             });
             break;
 
-        case more_book_by_category:
+        case moreBookCategory:
             let foundBookDataa = await bookRequest.findBookByCategory(msg.text, callback_data.begin + 10, 10);
             let bookList = foundBookDataa.books;
             let bookLength = bookList.length;
@@ -167,11 +168,11 @@ bot.on("callback_query", async (msg) => {
                 return;
             }
             const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "category");
-            await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard)
+            await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
             break;
 
 
-        case more_book_by_title:
+        case moreBookTitle:
             let foundBook = await bookRequest.findBookByTitle(msg.text);
             let bookList1 = foundBook.books;
             let bookLength1 = bookList1.length;
@@ -187,7 +188,7 @@ bot.on("callback_query", async (msg) => {
             break;
 
 
-        case more_book_by_details:
+        case moreBookDetails:
             await bookRequest.findBookByDetails(msg.text, callback_data.begin + 10, 10);
             let bookList2 = foundBookData.books;
             let bookLength2 = bookList2.length;
