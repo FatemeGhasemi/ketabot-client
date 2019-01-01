@@ -13,6 +13,9 @@ const categoriesArray = [translator.translate("STORY"), translator.translate("FO
 
 const getBookDetail = "gBD";
 const downloadBookPart = "dBP";
+const more_book_by_title="mbt";
+const more_book_by_details="mbd";
+const more_book_by_category="mbc";
 
 
 const showMainMenu = (msg, text) => {
@@ -146,7 +149,7 @@ bot.on("callback_query", async (msg) => {
             });
             break;
 
-        case "mbc"://mbc means more book category
+        case more_book_by_category:
             let foundBookDataa = await bookRequest.findBookByCategory(msg.text, callback_data.begin + 10, 10);
             let bookList = foundBookDataa.books;
             let bookLength = bookList.length;
@@ -162,7 +165,7 @@ bot.on("callback_query", async (msg) => {
             break;
 
 
-        case "mbt"://fbt means more book by title
+        case more_book_by_title:
             let foundBook = await bookRequest.findBookByTitle(msg.text);
             let bookList1 = foundBook.books;
             let bookLength1 = bookList1.length;
@@ -178,7 +181,7 @@ bot.on("callback_query", async (msg) => {
             break;
 
 
-        case "mbd"://mbd means more book details
+        case more_book_by_details:
             await bookRequest.findBookByDetails(msg.text, callback_data.begin + 10, 10);
             let bookList2 = foundBookData.books;
             let bookLength2 = bookList2.length;
