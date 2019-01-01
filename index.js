@@ -13,9 +13,9 @@ const categoriesArray = [translator.translate("STORY"), translator.translate("FO
 
 const getBookDetail = "gBD";
 const downloadBookPart = "dBP";
-const more_book_by_title="mbt";
-const more_book_by_details="mbd";
-const more_book_by_category="mbc";
+const more_book_by_title = "mbt";
+const more_book_by_details = "mbd";
+const more_book_by_category = "mbc";
 
 
 const showMainMenu = (msg, text) => {
@@ -34,18 +34,46 @@ bot.getMe().then(function (me) {
 });
 
 
-async function handleStartCommand(msg) {
+const handleStartCommand = async (msg) => {
     await userRequests.createUser(msg.from);
     showMainMenu(msg, translator.translate("CHOOSE_YOUR_WANTED_BOOK_CATEGORY_OR_SEARCH_IT"))
-}
+};
 
-async function handleDeepLink(msg) {
+const handleDeepLink = async (msg) => {
     const bookId = utils.deepLink(msg.text);
     let foundBookData = await bookRequest.findBookById(bookId);
     const inLineKeyboard = bookController.buildInLineKeyboardToShowBookParts(foundBookData);
     await userRequests.createUser(msg.from);
     bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]).then(console.log("msgText:", inLineKeyboard[1]))
-}
+};
+
+const handleCategoryMessage = async (msg) => {
+    let foundBookData = await bookRequest.findBookByCategory(msg.text);
+    let bookList = foundBookData.books;
+    let bookLength = bookList.length;
+    if (bookLength !== 0) {
+        bookList = bookList.reverse();
+    }
+    if (!bookList || bookLength === 0) {
+        showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+    }
+    const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "category");
+    bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
+};
+
+const handleDetailsMessage = async (msg) => {
+    let foundBookData = await bookRequest.findBookByDetails(msg.text);
+    let bookList = foundBookData.books;
+    let bookLength = bookList.length;
+    if (bookLength !== 0) {
+        bookList = bookList.reverse();
+    }
+    if (!bookList || bookLength === 0) {
+        showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+    }
+    const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "details");
+    bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
+};
 
 const messageHandler = async (msg) => {
     if (msg.text === "/start" || msg.text === "start") {
@@ -57,33 +85,11 @@ const messageHandler = async (msg) => {
     }
 
     if (!categoriesArray[msg.text] && msg.text !== "/start" || msg.text !== "start") {
-        let foundBookData = await bookRequest.findBookByDetails(msg.text);
-        let bookList = foundBookData.books;
-        let bookLength = bookList.length;
-        if (bookLength !== 0) {
-            bookList = bookList.reverse();
-        }
-        if (!bookList || bookLength === 0) {
-            showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-            return;
-        }
-        const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "details");
-        bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
+        await handleDetailsMessage(msg);
     }
 
     if (categoriesArray[msg.text]) {
-        let foundBookData = await bookRequest.findBookByCategory(msg.text);
-        let bookList = foundBookData.books;
-        let bookLength = bookList.length;
-        if (bookLength !== 0) {
-            bookList = bookList.reverse();
-        }
-        if (!bookList || bookLength === 0) {
-            showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-            return;
-        }
-        const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "category");
-        bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
+        await handleCategoryMessage(msg);
     }
 
     if (msg.text === translator.translate("SEARCH")) {
