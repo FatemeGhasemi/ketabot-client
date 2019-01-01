@@ -116,7 +116,7 @@ const sendAudio = async (partData, msg) => {
     await bot.sendAudio(msg.from.id, dlLink, {
         title: partTitle,
         performer: bookTitle,
-        caption: "\n\n" + "#" + author + "\n\n @ketaaBot"
+        caption: "\n\n" + "#" + author + "\n\n "+ process.env.CHAT_ID
     });
 };
 
