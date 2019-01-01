@@ -6,7 +6,7 @@ const utils = require('./utils');
 const translator = require("./translator");
 const userRequests = require('./service/user');
 const bookRequest = require('./service/book');
-const bookController = require('./controller/book');
+const bookController = require('./wrapper/telegram-bot');
 
 const categoriesArray = [translator.translate("STORY"), translator.translate("FOREIGN"),
     translator.translate("SHORT_STORY"), translator.translate("POEM")];
