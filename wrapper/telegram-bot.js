@@ -1,6 +1,5 @@
 const translator = require("../translator");
 const getBookDetail = "gBD";
-const moreBooksDetails = "mbd";
 const downloadBooksParts = "dBP";
 const moreBookTitle = "mbt";
 const moreBookDetails = "mbd";
@@ -43,6 +42,7 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
 
 const buildInLineKeyboardToShowSearchedBook = (booksData,searchType) => {
     let inlineKeyboardArray = [];
+    let type = "";
     booksData.forEach(book => {
         let callback_data = {
             "type": getBookDetail,
@@ -55,9 +55,18 @@ const buildInLineKeyboardToShowSearchedBook = (booksData,searchType) => {
         });
         inlineKeyboardArray.push(keyBoardRow)
     });
+      switch (searchType) {
+          case "category":
+              type = moreBookCategory;
+              break;
+          case "details":
+              type = moreBookDetails;
+              break
+      }
+
 
     let callback_data = {
-        "type": moreBooksDetails,
+        "type": type,
         searchType: booksData.searchType.replace('"',""),
         "begin": booksData.begin
     };

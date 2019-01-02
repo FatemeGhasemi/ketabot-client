@@ -6,7 +6,7 @@ const utils = require('./utils');
 const translator = require("./translator");
 const userRequests = require('./service/user');
 const bookRequest = require('./service/book');
-const bookController = require('./wrapper/telegram-bot');
+const telegramBotWrapper = require('./wrapper/telegram-bot');
 
 const categoriesArray = [translator.translate("STORY"), translator.translate("FOREIGN"),
     translator.translate("SHORT_STORY"), translator.translate("POEM")];
@@ -18,15 +18,22 @@ const moreBookDetails = "mbd";
 const moreBookCategory = "mbc";
 
 
-
-const showMainMenu = (msg, text) => {
-    bot.sendMessage(msg.from.id, text, {
-        "reply_markup": {
-            "keyboard": [[[translator.translate("SEARCH")]], [[translator.translate("STORY")]],
-                [[translator.translate("FOREIGN")]], [translator.translate("SHORT_STORY")], [translator.translate("POEM")],]
-        }
-
-    }).then(console.log("main menu show correctly"));
+const showMainMenu = async (msg, text) => {
+    try {
+        await bot.sendMessage(msg.from.id, text, {
+            "reply_markup": JSON.stringify({
+                "keyboard": [
+                    [translator.translate("SEARCH")],
+                    [translator.translate("STORY")],
+                    [translator.translate("FOREIGN")],
+                    [translator.translate("SHORT_STORY")],
+                    [translator.translate("POEM")]
+                ]
+            })
+        })
+    } catch (e) {
+        throw e.message
+    }
 };
 
 
@@ -36,65 +43,104 @@ bot.getMe().then(function (me) {
 
 
 const handleStartCommand = async (msg) => {
-    await userRequests.createUser(msg.from);
-    showMainMenu(msg, translator.translate("CHOOSE_YOUR_WANTED_BOOK_CATEGORY_OR_SEARCH_IT"))
+    try {
+        await userRequests.createUser(msg.from);
+        await showMainMenu(msg, translator.translate("CHOOSE_YOUR_WANTED_BOOK_CATEGORY_OR_SEARCH_IT"))
+    } catch (e) {
+
+        console.log('handleStartCommand error ', e)
+    }
 };
 
 const handleDeepLink = async (msg) => {
+    try {
     const bookId = utils.deepLink(msg.text);
     let foundBookData = await bookRequest.findBookById(bookId);
-    const inLineKeyboard = bookController.buildInLineKeyboardToShowBookParts(foundBookData);
+    const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
     await userRequests.createUser(msg.from);
-    bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]).then(console.log("msgText:", inLineKeyboard[1]))
+    await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0])}
+    catch (e) {
+        console.log("handle deep link error :",e.message)
+    }
 };
 
 const handleCategoryMessage = async (msg) => {
-    let foundBookData = await bookRequest.findBookByCategory(msg.text);
-    let bookList = foundBookData.books;
-    let bookLength = bookList.length;
-    if (bookLength !== 0) {
-        bookList = bookList.reverse();
+    try {
+        let foundBookData = await bookRequest.findBookByCategory(msg.text);
+        let bookList = foundBookData.books;
+        let bookLength = bookList.length;
+        if (bookLength !== 0) {
+            bookList = bookList.reverse();
+        }
+        if (!bookList || bookLength === 0) {
+            await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+        }
+        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
+        await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard)
+    } catch (e) {
+        console.log("handle CategoryMessage error :",e.message)
+
     }
-    if (!bookList || bookLength === 0) {
-        showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-    }
-    const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "category");
-    bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
 };
 
 const handleDetailsMessage = async (msg) => {
-    let foundBookData = await bookRequest.findBookByDetails(msg.text);
-    let bookList = foundBookData.books;
-    let bookLength = bookList.length;
-    if (bookLength !== 0) {
-        bookList = bookList.reverse();
+    try {
+        let foundBookData = await bookRequest.findBookByDetails(msg.text);
+        let bookList = foundBookData.book;
+        let bookLength = bookList.length;
+        if (bookLength !== 0) {
+            bookList = bookList.reverse();
+        }
+        if (!bookList || bookLength === 0) {
+            await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+        }
+        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, getBookDetail);
+        bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
+    } catch (e) {
+        console.log("handleDetailsMessage error :",e.message)
+
     }
-    if (!bookList || bookLength === 0) {
-        showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-    }
-    const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "details");
-    bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
 };
 
 const messageHandler = async (msg) => {
     if (msg.text === "/start" || msg.text === "start") {
-        await handleStartCommand(msg);
+        try {
+            await handleStartCommand(msg);
+        } catch (e) {
+            throw e
+        }
     }
 
     if (msg.text.includes("start=id-")) {
-        await handleDeepLink(msg);
+        try {
+            await handleDeepLink(msg);
+        } catch (e) {
+            throw e.message
+        }
     }
 
-    if (!categoriesArray[msg.text] && msg.text !== "/start" || msg.text !== "start") {
-        await handleDetailsMessage(msg);
+    if (!categoriesArray.includes(msg.text) && (msg.text !== "/start" || msg.text !== "start")) {
+        try {
+            await handleDetailsMessage(msg);
+        } catch (e) {
+            throw e.message
+        }
     }
 
-    if (categoriesArray[msg.text]) {
-        await handleCategoryMessage(msg);
+    if (categoriesArray.includes(msg.text)) {
+        try {
+            await handleCategoryMessage(msg);
+        } catch (e) {
+            throw e.message
+        }
     }
 
     if (msg.text === translator.translate("SEARCH")) {
-        bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
+        try {
+            bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
+        } catch (e) {
+            throw e.message
+        }
     }
 };
 
@@ -105,20 +151,24 @@ bot.on("message", async (msg) => {
 
 
 const sendAudio = async (partData, msg) => {
-    let dlLink = partData.dLink;
-    let book = partData.book;
-    let author;
-    if (book.author) {
-        author = book.author.split(' ').join('_')
+    try {
+        let dlLink = partData.dLink;
+        let book = partData.book;
+        let author;
+        if (book.author) {
+            author = book.author.split(' ').join('_')
+        }
+        let bookTitle = book.title;
+        let partTitle = partData.partName;
+        await bot.sendChatAction(msg.from.id, "upload_audio")
+        await bot.sendAudio(msg.from.id, dlLink, {
+            title: partTitle,
+            performer: bookTitle,
+            caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
+        });
+    } catch (e) {
+        throw e.message
     }
-    let bookTitle = book.title;
-    let partTitle = partData.partName;
-    await bot.sendChatAction(msg.from.id, "upload_audio")
-    await bot.sendAudio(msg.from.id, dlLink, {
-        title: partTitle,
-        performer: bookTitle,
-        caption: "\n\n" + "#" + author + "\n\n "+ process.env.CHAT_ID
-    });
 };
 
 
@@ -127,10 +177,10 @@ bot.on("callback_query", async (msg) => {
 
     let callback_data = JSON.parse(msg.data);
     switch (callback_data.type) {
-        case  moreBooksDetails:
+        case  moreBookDetails:
             let bookId = callback_data.id;
             let foundBookData = await bookRequest.findBookById(bookId);
-            const inLineKeyboard = bookController.buildInLineKeyboardToShowBookParts(foundBookData);
+            const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
             await userRequests.createUser(msg.from);
             await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]);
             break;
@@ -167,7 +217,7 @@ bot.on("callback_query", async (msg) => {
                 showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
                 return;
             }
-            const keyboard = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "category");
+            const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
             await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
             break;
 
@@ -183,7 +233,7 @@ bot.on("callback_query", async (msg) => {
                 showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
                 return;
             }
-            const keyboard1 = bookController.buildInLineKeyboardToShowSearchedBook(bookList1, "category");
+            const keyboard1 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList1, "category");
             await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard1);
             break;
 
@@ -199,7 +249,7 @@ bot.on("callback_query", async (msg) => {
                 showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
                 return;
             }
-            const keyboard2 = bookController.buildInLineKeyboardToShowSearchedBook(bookList, "details");
+            const keyboard2 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "details");
             await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard2);
             break;
     }

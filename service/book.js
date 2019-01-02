@@ -32,32 +32,35 @@ const createBook = (data) => {
     })
 };
 
-const findBookByCategory = (category, begin = 0, total = 10) => {
-    return axios({
+const findBookByCategory = async (category, begin = 0, total = 10) => {
+    const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
         qs: {
             category: category,
             begin, total
         }
-
     });
+    return result.data
+
 };
 
 
-const findBookByTitle = (title) => {
-    return axios({
+const findBookByTitle = async (title) => {
+    const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
         qs: {
             title: title,
         }
     });
+    return result.data
 };
 
 
-const findBookByDetails = (details, begin = 0, total = 10) => {
-    return axios({
+const findBookByDetails = async (details, begin = 0, total = 10) => {
+    const books = [];
+    const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
         qs: {
@@ -65,17 +68,20 @@ const findBookByDetails = (details, begin = 0, total = 10) => {
             begin, total
         }
     });
+
+    return result.data
 };
 
 
-const findBookById = (id) => {
-    return axios({
+const findBookById = async (id) => {
+    const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
         qs: {
             details: id,
         }
     });
+    return result.data
 };
 
 
