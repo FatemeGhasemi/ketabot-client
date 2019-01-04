@@ -6,8 +6,6 @@ const moreBookDetails = "mbd";
 const moreBookCategory = "mbc";
 
 
-
-
 const buildInLineKeyboardToShowBookParts = (bookData) => {
     let inlineKeyboardArray = [];
     bookData.parts.forEach(part => {
@@ -40,10 +38,12 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
 };
 
 
-const buildInLineKeyboardToShowSearchedBook = (booksData,searchType) => {
+const buildInLineKeyboardToShowSearchedBook = (booksData, searchType) => {
     let inlineKeyboardArray = [];
     let type = "";
-    booksData.forEach(book => {
+    let callback_data;
+    let bookList = booksData.books;
+    bookList.forEach(book => {
         let callback_data = {
             "type": getBookDetail,
             "id": book._id
@@ -55,21 +55,27 @@ const buildInLineKeyboardToShowSearchedBook = (booksData,searchType) => {
         });
         inlineKeyboardArray.push(keyBoardRow)
     });
-      switch (searchType) {
-          case "category":
-              type = moreBookCategory;
-              break;
-          case "details":
-              type = moreBookDetails;
-              break
-      }
+    switch (searchType) {
+        case "category":
+            type = moreBookCategory;
+            callback_data = {
+                "type": type,
+                "category": bookList[0].category,
+                "begin": bookList.begin
+            };
+            break;
+
+        case "details":
+            type = moreBookDetails;
+            callback_data = {
+                "type": type,
+                "details": bookList[0].details,
+                "begin": bookList.begin
+            };
+            break
+    }
 
 
-    let callback_data = {
-        "type": type,
-        searchType: booksData.searchType.replace('"',""),
-        "begin": booksData.begin
-    };
     if (booksData.books.length >= 10) {
         let keyBoardRow = [];
         keyBoardRow.push({text: translator.translate("MORE_OPTIONS"), callback_data: JSON.stringify(callback_data)});

@@ -54,31 +54,31 @@ const handleStartCommand = async (msg) => {
 
 const handleDeepLink = async (msg) => {
     try {
-    const bookId = utils.deepLink(msg.text);
-    let foundBookData = await bookRequest.findBookById(bookId);
-    const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
-    await userRequests.createUser(msg.from);
-    await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0])}
-    catch (e) {
-        console.log("handle deep link error :",e.message)
+        const bookId = utils.deepLink(msg.text);
+        let foundBookData = await bookRequest.findBookById(bookId);
+        const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
+        await userRequests.createUser(msg.from);
+        await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0])
+    } catch (e) {
+        console.log("handle deep link error :", e.message)
     }
 };
 
 const handleCategoryMessage = async (msg) => {
     try {
-        let foundBookData = await bookRequest.findBookByCategory(msg.text);
+        const eng_msg = convertPersianCategoryToEnglish(msg.text);
+        let foundBookData = await bookRequest.findBookByCategory(eng_msg);
         let bookList = foundBookData.books;
         let bookLength = bookList.length;
-        if (bookLength !== 0) {
-            bookList = bookList.reverse();
-        }
         if (!bookList || bookLength === 0) {
             await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+        } else {
+            bookList = bookList.reverse();
         }
-        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
+        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(foundBookData, "category");
         await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard)
     } catch (e) {
-        console.log("handle CategoryMessage error :",e.message)
+        console.log("handle CategoryMessage error :", e.message)
 
     }
 };
@@ -97,10 +97,27 @@ const handleDetailsMessage = async (msg) => {
         const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, getBookDetail);
         bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
     } catch (e) {
-        console.log("handleDetailsMessage error :",e.message)
+        console.log("handleDetailsMessage error :", e.message)
 
     }
 };
+
+const categoryMapping ={
+    'story':'داستان',
+    foreignStory:'داستان خارجی'
+}
+
+const reverseCategoryMapping ={
+    'داستان':'story',
+    'داستان خارجی':'foreignStory'
+}
+
+
+
+const convertPersianCategoryToEnglish = (persianCategory) => {
+    return reverseCategoryMapping[persianCategory] || persianCategory
+}
+
 
 const messageHandler = async (msg) => {
     if (msg.text === "/start" || msg.text === "start") {
@@ -160,7 +177,7 @@ const sendAudio = async (partData, msg) => {
         }
         let bookTitle = book.title;
         let partTitle = partData.partName;
-        await bot.sendChatAction(msg.from.id, "upload_audio")
+        await bot.sendChatAction(msg.from.id, "upload_audio");
         await bot.sendAudio(msg.from.id, dlLink, {
             title: partTitle,
             performer: bookTitle,
@@ -214,7 +231,7 @@ bot.on("callback_query", async (msg) => {
                 bookList = bookList.reverse();
             }
             if (!bookList || bookLength === 0) {
-                showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+                await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
                 return;
             }
             const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
@@ -230,7 +247,7 @@ bot.on("callback_query", async (msg) => {
                 bookList1 = bookList1.reverse();
             }
             if (!bookList1 || bookLength1 === 0) {
-                showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+                await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
                 return;
             }
             const keyboard1 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList1, "category");
@@ -238,20 +255,6 @@ bot.on("callback_query", async (msg) => {
             break;
 
 
-        case moreBookDetails:
-            await bookRequest.findBookByDetails(msg.text, callback_data.begin + 10, 10);
-            let bookList2 = foundBookData.books;
-            let bookLength2 = bookList2.length;
-            if (bookLength2 !== 0) {
-                bookList2 = bookList2.reverse();
-            }
-            if (!bookList2 || bookLength2 === 0) {
-                showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-                return;
-            }
-            const keyboard2 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "details");
-            await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard2);
-            break;
     }
 
 

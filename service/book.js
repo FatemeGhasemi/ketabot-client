@@ -36,7 +36,7 @@ const findBookByCategory = async (category, begin = 0, total = 10) => {
     const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
-        qs: {
+        params: {
             category: category,
             begin, total
         }
@@ -50,7 +50,7 @@ const findBookByTitle = async (title) => {
     const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
-        qs: {
+        params: {
             title: title,
         }
     });
@@ -63,7 +63,7 @@ const findBookByDetails = async (details, begin = 0, total = 10) => {
     const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
-        qs: {
+        params: {
             details: details,
             begin, total
         }
@@ -77,7 +77,7 @@ const findBookById = async (id) => {
     const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',
-        qs: {
+        params: {
             details: id,
         }
     });
