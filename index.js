@@ -102,16 +102,15 @@ const handleDetailsMessage = async (msg) => {
     }
 };
 
-const categoryMapping ={
-    'story':'داستان',
-    foreignStory:'داستان خارجی'
+const categoryMapping = {
+    'story': 'داستان',
+    foreignStory: 'داستان خارجی'
 }
 
-const reverseCategoryMapping ={
-    'داستان':'story',
-    'داستان خارجی':'foreignStory'
+const reverseCategoryMapping = {
+    'داستان': 'story',
+    'داستان خارجی': 'foreignStory'
 }
-
 
 
 const convertPersianCategoryToEnglish = (persianCategory) => {
@@ -189,73 +188,94 @@ const sendAudio = async (partData, msg) => {
 };
 
 
+const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
+    let bookId = callback_data.id;
+    let foundBookData = await bookRequest.findBookById(bookId);
+    const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
+    await userRequests.createUser(msg.from);
+    await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]);
+};
+
+
+const handleDownloadBookParts = async (msg, callback_data) => {
+    let randomString = callback_data.link;
+    let partData = utils.getValueFromMap(randomString);
+    bot.getChatMember(process.env.CHAT_ID, msg.from.id).then(async (result) => {
+        if (result.status !== "kicked" && result.status !== "left") {
+            await sendAudio(partData, msg);
+            await userRequests.createUser(msg.from);
+            return;
+        }
+        await bot.sendMessage(msg.from.id, translator.translate("JOIN_CHANNEL_ALERT") + "\n\n" + process.env.BOT_USERNAME)
+
+    }).catch(async (error) => {
+        console.log("error of getChatMember:", error);
+        await sendAudio(partData, msg);
+        userRequests.downloadCount({
+            "telegramId": msg.from.id
+        });
+    });
+};
+
+
+const handleMoreBookCategory = async (msg, callback_data) => {
+    let foundBookData = await bookRequest.findBookByCategory(msg.text, callback_data.begin + 10, 10);
+    let bookList = foundBookData.books;
+    let bookLength = bookList.length;
+    if (bookLength !== 0) {
+        bookList = bookList.reverse();
+    }
+    if (!bookList || bookLength === 0) {
+        await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+        return;
+    }
+    const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
+    await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
+};
+
+
+const handleMoreBookTitle = async (msg)=>{
+    let foundBook = await bookRequest.findBookByTitle(msg.text);
+    let bookList1 = foundBook.books;
+    let bookLength1 = bookList1.length;
+    if (bookLength1 !== 0) {
+        bookList1 = bookList1.reverse();
+    }
+    if (!bookList1 || bookLength1 === 0) {
+        await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+        return;
+    }
+    const keyboard1 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList1, "category");
+    await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard1);
+
+};
+
+const handleCallbackDataCases=async (msg,callback_data)=>{
+    switch (callback_data.type) {
+        case getBookDetail:
+            await handleGetBookDetailsCallbackQuery(msg, callback_data);
+            break;
+
+        case downloadBooksParts:
+            await handleDownloadBookParts(msg, callback_data);
+            break;
+
+        case moreBookCategory:
+            await handleMoreBookCategory(msg, callback_data);
+            break;
+
+        case moreBookTitle:
+            await handleMoreBookTitle(msg)
+            break;
+    }
+}
+
+
+
 bot.on("callback_query", async (msg) => {
     await bot.answerCallbackQuery(msg.id, "", false);
 
     let callback_data = JSON.parse(msg.data);
-    switch (callback_data.type) {
-        case  moreBookDetails:
-            let bookId = callback_data.id;
-            let foundBookData = await bookRequest.findBookById(bookId);
-            const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
-            await userRequests.createUser(msg.from);
-            await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]);
-            break;
-
-        case downloadBooksParts:
-            let randomString = callback_data.link;
-            let partData = utils.getValueFromMap(randomString);
-            bot.getChatMember(process.env.CHAT_ID, msg.from.id).then(async (result) => {
-                if (result.status !== "kicked" && result.status !== "left") {
-                    await sendAudio(partData, msg);
-                    await userRequests.createUser(msg.from);
-
-                    return;
-                }
-                await bot.sendMessage(msg.from.id, translator.translate("JOIN_CHANNEL_ALERT") + "\n\n" + process.env.BOT_USERNAME)
-
-            }).catch(async (error) => {
-                console.log("error of getChatMember:", error);
-                await sendAudio(partData, msg);
-                userRequests.downloadCount({
-                    "telegramId": msg.from.id
-                });
-            });
-            break;
-
-        case moreBookCategory:
-            let foundBookDataa = await bookRequest.findBookByCategory(msg.text, callback_data.begin + 10, 10);
-            let bookList = foundBookDataa.books;
-            let bookLength = bookList.length;
-            if (bookLength !== 0) {
-                bookList = bookList.reverse();
-            }
-            if (!bookList || bookLength === 0) {
-                await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-                return;
-            }
-            const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
-            await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
-            break;
-
-
-        case moreBookTitle:
-            let foundBook = await bookRequest.findBookByTitle(msg.text);
-            let bookList1 = foundBook.books;
-            let bookLength1 = bookList1.length;
-            if (bookLength1 !== 0) {
-                bookList1 = bookList1.reverse();
-            }
-            if (!bookList1 || bookLength1 === 0) {
-                await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-                return;
-            }
-            const keyboard1 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList1, "category");
-            await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard1);
-            break;
-
-
-    }
-
+    await handleCallbackDataCases(msg,callback_data)
 
 });
