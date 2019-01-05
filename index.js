@@ -193,7 +193,15 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     let foundBookData = await bookRequest.findBookById(bookId);
     const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
     await userRequests.createUser(msg.from);
-    await bot.sendMessage(msg.from.id, inLineKeyboard[1], inLineKeyboard[0]);
+    if (foundBookData.message.description === "") {
+        foundBookData.message.description = foundBookData.message.title
+    }
+    let author = foundBookData.message.author.split(' ').join('_');
+    // const msgText = (foundBookData.message.title + " \n " + foundBookData.message.description + " \n\n#" + author + "\n" +
+    //     translator.translate("INLINE_KEYBOARD_TEXT_MESSAGE") + " \n\n " + process.env.BOT_USERNAME + foundBookData._id);
+    const  msgText = "hi"
+
+    await bot.sendMessage(msg.from.id, msgText, inLineKeyboard);
 };
 
 
@@ -234,7 +242,7 @@ const handleMoreBookCategory = async (msg, callback_data) => {
 };
 
 
-const handleMoreBookTitle = async (msg)=>{
+const handleMoreBookTitle = async (msg) => {
     let foundBook = await bookRequest.findBookByTitle(msg.text);
     let bookList1 = foundBook.books;
     let bookLength1 = bookList1.length;
@@ -250,7 +258,9 @@ const handleMoreBookTitle = async (msg)=>{
 
 };
 
-const handleCallbackDataCases=async (msg,callback_data)=>{
+const handleCallbackDataCases = async (msg, callback_data) => {
+    try {
+
     switch (callback_data.type) {
         case getBookDetail:
             await handleGetBookDetailsCallbackQuery(msg, callback_data);
@@ -266,16 +276,21 @@ const handleCallbackDataCases=async (msg,callback_data)=>{
 
         case moreBookTitle:
             await handleMoreBookTitle(msg)
-            break;
-    }
-}
+            break;}
 
+    }catch (e) {
+        console.log(" handleCallbackDataCases err:", e.message)
+    }
+};
 
 
 bot.on("callback_query", async (msg) => {
+    try {
+
     await bot.answerCallbackQuery(msg.id, "", false);
-
     let callback_data = JSON.parse(msg.data);
-    await handleCallbackDataCases(msg,callback_data)
-
+    await handleCallbackDataCases(msg, callback_data)}
+    catch (e) {
+        throw e.message
+    }
 });

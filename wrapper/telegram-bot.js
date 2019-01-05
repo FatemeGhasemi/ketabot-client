@@ -1,4 +1,5 @@
 const translator = require("../translator");
+const utils = require("../utils")
 const getBookDetail = "gBD";
 const downloadBooksParts = "dBP";
 const moreBookTitle = "mbt";
@@ -8,7 +9,8 @@ const moreBookCategory = "mbc";
 
 const buildInLineKeyboardToShowBookParts = (bookData) => {
     let inlineKeyboardArray = [];
-    bookData.parts.forEach(part => {
+    bookData.message.parts.forEach(part => {
+        console.log("parts:",part)
         const randomString = utils.getRandomString(10);
         utils.addValueToMap(randomString, {dLink: part.downloadLink, book: bookData, partName: part.partName});
         const callback_data = {
@@ -22,19 +24,14 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
     const keyboardStr = JSON.stringify({
         inline_keyboard: inlineKeyboardArray
     });
-    const keyboard = {
+    return {
         parse_mode: "Markdown",
         reply_markup: JSON.parse(keyboardStr),
         disable_web_page_preview: true
     };
-    if (bookData.description === "") {
-        bookData.description = bookData.title
-    }
-    let author = bookData.author.split(' ').join('_');
-    const msgText = (bookData.title + " \n " + bookData.description + " \n\n#" + author + "\n" +
-        translator.translate("INLINE_KEYBOARD_TEXT_MESSAGE") + " \n\n " + process.env.BOT_USERNAME + bookData.id);
 
-    return {keyboard, msgText}
+
+
 };
 
 

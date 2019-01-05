@@ -1,3 +1,11 @@
+const HashMap = require('hashmap');
+const redis = require("redis");
+const redisClient = redis.createClient();
+
+let map;
+const bookClientMap = "bookMap";
+
+
 function getRandomString(stringLength) {
     let text = "";
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -8,14 +16,12 @@ function getRandomString(stringLength) {
 }
 
 
+redisClient.on('connect', ()=> {
+    console.log('Redis client connected');
+});
 
 
-const redis = require("redis")
-const redisClient = redis.createClient()
-const HashMap = require('hashmap');
-let map;
-const bookClientMap = "bookMap";
-redisClient.get(bookClientMap, function (error, result) {
+redisClient.get(bookClientMap,  (error, result)=> {
     if (error != null || result == null) {
         map = new HashMap()
     } else {
@@ -34,7 +40,7 @@ const addValueToMap=(key, value) =>{
     map.set(key,value) 
 };
 
-function getValueFromMap(key) {
+const getValueFromMap=(key)=> {
     return map.get(key)
    
 }

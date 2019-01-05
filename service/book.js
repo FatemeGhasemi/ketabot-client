@@ -78,7 +78,7 @@ const findBookById = async (id) => {
         method: 'GET',
         url: process.env.BASE_URL + '/books',
         params: {
-            details: id,
+            _id: id,
         }
     });
     return result.data
