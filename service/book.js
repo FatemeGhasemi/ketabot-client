@@ -59,7 +59,6 @@ const findBookByTitle = async (title) => {
 
 
 const findBookByDetails = async (details, begin = 0, total = 10) => {
-    const books = [];
     const result = await axios({
         method: 'GET',
         url: process.env.BASE_URL + '/books',

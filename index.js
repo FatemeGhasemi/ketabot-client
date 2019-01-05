@@ -40,6 +40,20 @@ const showMainMenu = async (msg, text) => {
 bot.getMe().then(function (me) {
     console.log("Hi I am %s !", me.username);
 });
+const categoryMapping = {
+    'story': 'داستان',
+    foreignStory: 'داستان خارجی'
+}
+
+const reverseCategoryMapping = {
+    'داستان': 'story',
+    'داستان خارجی': 'foreignStory'
+}
+
+
+const convertPersianCategoryToEnglish = (persianCategory) => {
+    return reverseCategoryMapping[persianCategory] || persianCategory
+}
 
 
 const handleStartCommand = async (msg) => {
@@ -85,40 +99,28 @@ const handleCategoryMessage = async (msg) => {
 
 const handleDetailsMessage = async (msg) => {
     try {
-        let foundBookData = await bookRequest.findBookByDetails(msg.text);
-        let bookList = foundBookData.book;
+        const eng_msg = convertPersianCategoryToEnglish(msg.text);
+        let foundBookData = await bookRequest.findBookByDetails(eng_msg);
+        let bookList = foundBookData.books;
         let bookLength = bookList.length;
-        if (bookLength !== 0) {
-            bookList = bookList.reverse();
-        }
         if (!bookList || bookLength === 0) {
             await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+        } else {
+            bookList = bookList.reverse();
         }
-        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, getBookDetail);
-        bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard).then(console.log("bookList:", bookList))
-    } catch (e) {
-        console.log("handleDetailsMessage error :", e.message)
-
+        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(foundBookData, "details");
+        await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard)
+    }catch (e) {
+        console.log("handleDetailsMessage err:", e.message)
     }
+
 };
 
-const categoryMapping = {
-    'story': 'داستان',
-    foreignStory: 'داستان خارجی'
-}
 
-const reverseCategoryMapping = {
-    'داستان': 'story',
-    'داستان خارجی': 'foreignStory'
-}
-
-
-const convertPersianCategoryToEnglish = (persianCategory) => {
-    return reverseCategoryMapping[persianCategory] || persianCategory
-}
 
 
 const messageHandler = async (msg) => {
+
     if (msg.text === "/start" || msg.text === "start") {
         try {
             await handleStartCommand(msg);
