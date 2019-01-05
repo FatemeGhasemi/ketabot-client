@@ -191,17 +191,23 @@ const sendAudio = async (partData, msg) => {
 const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     let bookId = callback_data.id;
     let foundBookData = await bookRequest.findBookById(bookId);
+    let msgMiddleText = foundBookData.message.title + " \n ";
+    let author = foundBookData.message.author;
+    let description = foundBookData.message.description;
+    if (description !== "") {
+        msgMiddleText += description + " \n\n"
+    }
+    if (author !== "") {
+        author = author.split(' ').join('_');
+        msgMiddleText += "#" + author + "\n"
+    }
+
     const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
     await userRequests.createUser(msg.from);
-    if (foundBookData.message.description === "") {
-        foundBookData.message.description = foundBookData.message.title
-    }
-    let author = foundBookData.message.author.split(' ').join('_');
-    // const msgText = (foundBookData.message.title + " \n " + foundBookData.message.description + " \n\n#" + author + "\n" +
-    //     translator.translate("INLINE_KEYBOARD_TEXT_MESSAGE") + " \n\n " + process.env.BOT_USERNAME + foundBookData._id);
-    const  msgText = "hi"
 
-    await bot.sendMessage(msg.from.id, msgText, inLineKeyboard);
+    const msgFinalText = (msgMiddleText + translator.translate("SHARE_BY_THIS_LINK_MESSAGE") + " \n\n " + process.env.BOT_USERNAME + foundBookData.message._id);
+    console.log("msg:",msgFinalText)
+    await bot.sendMessage(msg.from.id, msgFinalText, inLineKeyboard);
 };
 
 
@@ -261,24 +267,25 @@ const handleMoreBookTitle = async (msg) => {
 const handleCallbackDataCases = async (msg, callback_data) => {
     try {
 
-    switch (callback_data.type) {
-        case getBookDetail:
-            await handleGetBookDetailsCallbackQuery(msg, callback_data);
-            break;
+        switch (callback_data.type) {
+            case getBookDetail:
+                await handleGetBookDetailsCallbackQuery(msg, callback_data);
+                break;
 
-        case downloadBooksParts:
-            await handleDownloadBookParts(msg, callback_data);
-            break;
+            case downloadBooksParts:
+                await handleDownloadBookParts(msg, callback_data);
+                break;
 
-        case moreBookCategory:
-            await handleMoreBookCategory(msg, callback_data);
-            break;
+            case moreBookCategory:
+                await handleMoreBookCategory(msg, callback_data);
+                break;
 
-        case moreBookTitle:
-            await handleMoreBookTitle(msg)
-            break;}
+            case moreBookTitle:
+                await handleMoreBookTitle(msg)
+                break;
+        }
 
-    }catch (e) {
+    } catch (e) {
         console.log(" handleCallbackDataCases err:", e.message)
     }
 };
@@ -287,10 +294,10 @@ const handleCallbackDataCases = async (msg, callback_data) => {
 bot.on("callback_query", async (msg) => {
     try {
 
-    await bot.answerCallbackQuery(msg.id, "", false);
-    let callback_data = JSON.parse(msg.data);
-    await handleCallbackDataCases(msg, callback_data)}
-    catch (e) {
+        await bot.answerCallbackQuery(msg.id, "", false);
+        let callback_data = JSON.parse(msg.data);
+        await handleCallbackDataCases(msg, callback_data)
+    } catch (e) {
         throw e.message
     }
 });
