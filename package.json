@@ -15,6 +15,7 @@
     "body-parser": "^1.18.2",
     "dotenv": "^6.2.0",
     "express": "^4.15.4",
+    "fs": "0.0.1-security",
     "hapi": "^16.6.2",
     "hashmap": "^2.3.0",
     "mongoose": "^4.13.5",

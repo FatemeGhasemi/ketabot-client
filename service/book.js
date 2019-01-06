@@ -1,35 +1,41 @@
 const axios = require('axios');
 
 
-const createBook = (data) => {
-    return axios({
-        method: 'POST',
-        url: process.env.BASE_URL + '/books',
-        headers: {
-            "content-Type": "application/json",
-            "admin-token": process.env.ADMIN_CODE
-        },
-        data: {
-            "title": data.title,
-            "path": data.path,
-            "cost": data.cost,
-            "description": data.description,
-            "publisher": data.publisher,
-            "author": data.author,
-            "publishedYear": data.publishedYear,
-            "translator": data.translator,
-            "voiceActor": data.voiceActor,
-            "category": data.category,
-            "tags": data.tags,
-            "language": data.language,
-            "downloadCount": data.downloadCount,
-            "type": data.type,
-            "cover": data.cover,
-            "parts": data.parts,
-            "sourceLink": data.sourceLink,
-            "isActive": data.isActive
-        }
-    })
+const createBook = async (data) => {
+    try {
+        const result=await axios({
+            method: 'POST',
+            url: "http://localhost:3001/api/v1/books",
+            headers: {
+                "content-Type": "application/json",
+                "admin-token": "kdjhsalkdj823rhkdjhsdaf"
+            },
+            data: {
+                "title": data.title,
+                "path": data.path,
+                "cost": data.cost,
+                "description": data.description,
+                "publisher": data.publisher,
+                "author": data.author,
+                "publishedYear": data.publishedYear,
+                "translator": data.translator,
+                "voiceActor": data.voiceActor,
+                "category": data.category,
+                "tags": data.tags,
+                "language": data.language,
+                "downloadCount": data.downloadCount,
+                "type": data.type,
+                "cover": data.cover,
+                "parts": data.parts,
+                "sourceLink": data.sourceLink,
+                "isActive": data.isActive
+            }
+        });
+        return result.data
+    }
+    catch (e) {
+        console.log("ERROR AXIOS: ",e)
+    }
 };
 
 const findBookByCategory = async (category, begin = 0, total = 10) => {
