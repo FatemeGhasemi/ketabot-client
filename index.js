@@ -40,20 +40,7 @@ const showMainMenu = async (msg, text) => {
 bot.getMe().then(function (me) {
     console.log("Hi I am %s !", me.username);
 });
-const categoryMapping = {
-    'story': 'داستان',
-    foreignStory: 'داستان خارجی'
-}
 
-const reverseCategoryMapping = {
-    'داستان': 'story',
-    'داستان خارجی': 'foreignStory'
-}
-
-
-const convertPersianCategoryToEnglish = (persianCategory) => {
-    return reverseCategoryMapping[persianCategory] || persianCategory
-}
 
 
 const handleStartCommand = async (msg) => {
@@ -80,7 +67,7 @@ const handleDeepLink = async (msg) => {
 
 const handleCategoryMessage = async (msg) => {
     try {
-        const eng_msg = convertPersianCategoryToEnglish(msg.text);
+        const eng_msg = translator.convertPersianCategoryToEnglish(msg.text);
         let foundBookData = await bookRequest.findBookByCategory(eng_msg);
         let bookList = foundBookData.books;
         let bookLength = bookList.length;
@@ -268,7 +255,6 @@ const handleMoreBookTitle = async (msg) => {
 
 const handleCallbackDataCases = async (msg, callback_data) => {
     try {
-
         switch (callback_data.type) {
             case getBookDetail:
                 await handleGetBookDetailsCallbackQuery(msg, callback_data);
@@ -286,7 +272,6 @@ const handleCallbackDataCases = async (msg, callback_data) => {
                 await handleMoreBookTitle(msg)
                 break;
         }
-
     } catch (e) {
         console.log(" handleCallbackDataCases err:", e.message)
     }

@@ -17,8 +17,23 @@ const translate = (word, language = PERSIAN) => {
 
     }
     return mapping[word.toUpperCase()] || word
-
 };
 
 
-module.exports={translate, ENGLISH, PERSIAN};
+const categoryMapping = {
+    'story': 'داستان',
+    'foreignStory': 'داستان خارجی'
+}
+
+const reverseCategoryMapping = {
+    'داستان': 'story',
+    'داستان خارجی': 'foreignStory'
+}
+
+
+const convertPersianCategoryToEnglish = (persianCategory) => {
+    return reverseCategoryMapping[persianCategory] || persianCategory
+}
+
+
+module.exports = {translate, ENGLISH, PERSIAN, convertPersianCategoryToEnglish};
