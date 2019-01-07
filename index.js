@@ -222,7 +222,8 @@ const handleDownloadBookParts = async (msg, callback_data) => {
 
 
 const handleMoreBookCategory = async (msg, callback_data) => {
-    let foundBookData = await bookRequest.findBookByCategory(msg.text, callback_data.begin + 10, 10);
+    try{
+    let foundBookData = await bookRequest.findBookByCategory(callback_data.category, callback_data.begin + 10, 10);
     let bookList = foundBookData.books;
     let bookLength = bookList.length;
     if (bookLength !== 0) {
@@ -232,8 +233,11 @@ const handleMoreBookCategory = async (msg, callback_data) => {
         await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
         return;
     }
-    const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "category");
-    await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
+    const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(foundBookData, "category", callback_data.begin + 10);
+    await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);}
+    catch (e) {
+        console.log("handleMoreBookCategory ERROR:",e.message)
+    }
 };
 
 

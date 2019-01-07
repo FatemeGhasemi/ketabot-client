@@ -3,9 +3,9 @@ const axios = require('axios');
 
 const createBook = async (data) => {
     try {
-        const result=await axios({
+        const result = await axios({
             method: 'POST',
-            url: process.env.BASE_URL+"/books",
+            url: process.env.BASE_URL + "/books",
             headers: {
                 "content-Type": "application/json",
                 "admin-token": process.env.ADMIN_CODE
@@ -32,22 +32,26 @@ const createBook = async (data) => {
             }
         });
         return result.data
-    }
-    catch (e) {
-        console.log("ERROR AXIOS: ",e)
+    } catch (e) {
+        console.log("ERROR AXIOS: ", e)
     }
 };
 
-const findBookByCategory = async (category, begin = 0, total = 10) => {
-    const result = await axios({
-        method: 'GET',
-        url: process.env.BASE_URL + '/books',
-        params: {
-            category: category,
-            begin, total
-        }
-    });
-    return result.data
+const findBookByCategory = async (category, begin = 0, total=10 ) => {
+    try {
+        const result = await axios({
+            method: 'GET',
+            url: process.env.BASE_URL + '/books',
+            params: {
+                category: category,
+                begin,
+                total:total
+            }
+        });
+        return result.data
+    } catch (e) {
+        console.log("findBookByCategory ERROR: ", e.message)
+    }
 
 };
 

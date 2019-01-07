@@ -35,12 +35,13 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
 };
 
 
-const buildInLineKeyboardToShowSearchedBook = (booksData, searchType) => {
+const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin =0) => {
     let inlineKeyboardArray = [];
     let type = "";
     let callback_data;
     let bookList = booksData.books;
     bookList.forEach(book => {
+        console.log("each book of bookList: ", book);
         let callback_data = {
             "type": getBookDetail,
             "id": book._id
@@ -52,31 +53,35 @@ const buildInLineKeyboardToShowSearchedBook = (booksData, searchType) => {
         });
         inlineKeyboardArray.push(keyBoardRow)
     });
-    switch (searchType) {
-        case "category":
-            type = moreBookCategory;
-            callback_data = {
-                "type": type,
-                "category": bookList[0].category,
-                "begin": bookList.begin
-            };
-            break;
 
-        case "details":
-            type = moreBookDetails;
-            callback_data = {
-                "type": type,
-                "details": bookList[0].details,
-                "begin": bookList.begin
-            };
-            break
-    }
 
 
     if (booksData.books.length >= 10) {
         let keyBoardRow = [];
+        switch (searchType) {
+            case "category":
+                type = moreBookCategory;
+                callback_data = {
+                    "type": type,
+                    "category": bookList[0].category,
+                    "begin": begin
+                };
+                break;
+
+            case "details":
+                type = moreBookDetails;
+                callback_data = {
+                    "type": type,
+                    "details": bookList[0].details,
+                    "begin": begin
+                };
+                break
+        }
         keyBoardRow.push({text: translator.translate("MORE_OPTIONS"), callback_data: JSON.stringify(callback_data)});
         inlineKeyboardArray.push(keyBoardRow)
+
+
+
     }
 
     const keyboardStr = JSON.stringify({
