@@ -1,6 +1,6 @@
 const HashMap = require('hashmap');
 const redis = require("redis");
-const redisClient = redis.createClient();
+const redisClient = redis.createClient(process.env.REDIS_PORT,process.env.REDIS_HOST);
 
 let map;
 const bookClientMap = "bookMap";
