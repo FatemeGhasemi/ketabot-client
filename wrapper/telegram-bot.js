@@ -12,7 +12,8 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
     bookData.message.parts.forEach(part => {
         console.log("parts:",part)
         const randomString = utils.getRandomString(10);
-        utils.addValueToMap(randomString, {dLink: part.downloadLink, book: bookData, partName: part.partName});
+        console.log('bookData' ,bookData)
+        utils.addValueToMap(randomString, { book: bookData.message, partName: part.partName});
         const callback_data = {
             "type": downloadBooksParts,
             "link": randomString
@@ -29,8 +30,6 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
         reply_markup: JSON.parse(keyboardStr),
         disable_web_page_preview: true
     };
-
-
 
 };
 

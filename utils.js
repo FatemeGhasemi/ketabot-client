@@ -21,18 +21,16 @@ function getRandomString(stringLength) {
 }
 
 
-redisClient.on('connect', () => {
-    console.log('Redis client connected');
-});
-
-
-redisClient.get(bookClientMap, (error, result) => {
+redisClient.get(bookClientMap, function (error, result) {
     if (error != null || result == null) {
         map = new HashMap()
     } else {
         map = new HashMap(JSON.parse(result))
     }
 })
+
+
+
 
 
 const deepLink = (text) => {

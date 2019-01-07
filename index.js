@@ -42,7 +42,6 @@ bot.getMe().then(function (me) {
 });
 
 
-
 const handleStartCommand = async (msg) => {
     try {
         await userRequests.createUser(msg.from);
@@ -97,13 +96,11 @@ const handleDetailsMessage = async (msg) => {
         }
         const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(foundBookData, "details");
         await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard)
-    }catch (e) {
+    } catch (e) {
         console.log("handleDetailsMessage err:", e.message)
     }
 
 };
-
-
 
 
 const messageHandler = async (msg) => {
@@ -154,19 +151,25 @@ bot.on("message", async (msg) => {
     await messageHandler(msg)
 });
 
+const generateDownloadLink = (bookPath, partTitle) => {
+    return `${process.env.CDN_BASE_URL}/${bookPath}/${partTitle}.mp3`
+}
 
 const sendAudio = async (partData, msg) => {
     try {
-        let dlLink = partData.dLink;
         let book = partData.book;
-        let author;
-        if (book.author) {
+        const downloadLink = generateDownloadLink(book.path, partData.partName)
+        console.log('partData.book ', partData.book);
+        console.log(' partData', partData);
+        console.log('download link ', downloadLink);
+        let author=book.author;
+        if (book.author !==undefined) {
             author = book.author.split(' ').join('_')
         }
         let bookTitle = book.title;
         let partTitle = partData.partName;
         await bot.sendChatAction(msg.from.id, "upload_audio");
-        await bot.sendAudio(msg.from.id, dlLink, {
+        await bot.sendAudio(msg.from.id, downloadLink, {
             title: partTitle,
             performer: bookTitle,
             caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
@@ -195,7 +198,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     await userRequests.createUser(msg.from);
 
     const msgFinalText = (msgMiddleText + translator.translate("SHARE_BY_THIS_LINK_MESSAGE") + " \n\n " + process.env.BOT_USERNAME + foundBookData.message._id);
-    console.log("msg:",msgFinalText)
+    console.log("msg:", msgFinalText);
     await bot.sendMessage(msg.from.id, msgFinalText, inLineKeyboard);
 };
 
@@ -222,38 +225,43 @@ const handleDownloadBookParts = async (msg, callback_data) => {
 
 
 const handleMoreBookCategory = async (msg, callback_data) => {
-    try{
-    let foundBookData = await bookRequest.findBookByCategory(callback_data.category, callback_data.begin + 10, 10);
-    let bookList = foundBookData.books;
-    let bookLength = bookList.length;
-    if (bookLength !== 0) {
-        bookList = bookList.reverse();
-    }
-    if (!bookList || bookLength === 0) {
-        await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-        return;
-    }
-    const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(foundBookData, "category", callback_data.begin + 10);
-    await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);}
-    catch (e) {
-        console.log("handleMoreBookCategory ERROR:",e.message)
+    try {
+        let foundBookData = await bookRequest.findBookByCategory(callback_data.category, callback_data.begin + 10, 10);
+        let bookList = foundBookData.books;
+        let bookLength = bookList.length;
+        if (bookLength !== 0) {
+            bookList = bookList.reverse();
+        }
+        if (!bookList || bookLength === 0) {
+            await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+            return;
+        }
+        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(foundBookData, "category", callback_data.begin + 10);
+        await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
+    } catch (e) {
+        console.log("handleMoreBookCategory ERROR:", e.message)
     }
 };
 
 
-const handleMoreBookTitle = async (msg) => {
-    let foundBook = await bookRequest.findBookByTitle(msg.text);
-    let bookList1 = foundBook.books;
-    let bookLength1 = bookList1.length;
-    if (bookLength1 !== 0) {
-        bookList1 = bookList1.reverse();
+const handleMoreBookDetails = async (msg,callback_data) => {
+    try {
+
+        let foundBook = await bookRequest.findBookByTitle(callback_data.category, callback_data.begin + 10, 10);
+        let bookList = foundBook.books;
+        let bookLength1 = bookList.length;
+        if (bookLength1 !== 0) {
+            bookList = bookList.reverse();
+        }
+        if (!bookList || bookLength1 === 0) {
+            await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
+            return;
+        }
+        const keyboard = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList, "details");
+        await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard);
+    } catch (e) {
+        console.log("handleMoreBookDetails ERROR: ", e.message)
     }
-    if (!bookList1 || bookLength1 === 0) {
-        await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
-        return;
-    }
-    const keyboard1 = telegramBotWrapper.buildInLineKeyboardToShowSearchedBook(bookList1, "category");
-    await bot.sendMessage(msg.from.id, translator.translate("FOUND_BOOK_LIST"), keyboard1);
 
 };
 
@@ -273,7 +281,7 @@ const handleCallbackDataCases = async (msg, callback_data) => {
                 break;
 
             case moreBookTitle:
-                await handleMoreBookTitle(msg)
+                await handleMoreBookDetails(msg)
                 break;
         }
     } catch (e) {
@@ -289,6 +297,6 @@ bot.on("callback_query", async (msg) => {
         let callback_data = JSON.parse(msg.data);
         await handleCallbackDataCases(msg, callback_data)
     } catch (e) {
-        throw e.message
+        console.log("callback_query event ERROR: ", e.message)
     }
 });

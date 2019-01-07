@@ -69,16 +69,19 @@ const findBookByTitle = async (title) => {
 
 
 const findBookByDetails = async (details, begin = 0, total = 10) => {
-    const result = await axios({
-        method: 'GET',
-        url: process.env.BASE_URL + '/books',
-        params: {
-            details: details,
-            begin, total
-        }
-    });
-
-    return result.data
+    try {
+        const result = await axios({
+            method: 'GET',
+            url: process.env.BASE_URL + '/books',
+            params: {
+                details: details,
+                begin, total
+            }
+        });
+        return result.data
+    }catch (e) {
+        console.log("findBookByDetails ERROR: ",e.message)
+    }
 };
 
 
