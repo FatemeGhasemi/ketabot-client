@@ -86,7 +86,7 @@ const handleCategoryMessage = async (msg) => {
 
 const handleDetailsMessage = async (msg) => {
     try {
-        const eng_msg = convertPersianCategoryToEnglish(msg.text);
+        const eng_msg = translator.convertPersianCategoryToEnglish(msg.text);
         let foundBookData = await bookRequest.findBookByDetails(eng_msg);
         let bookList = foundBookData.books;
         let bookLength = bookList.length;

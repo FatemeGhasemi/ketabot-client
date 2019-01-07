@@ -1,6 +1,11 @@
 const HashMap = require('hashmap');
 const redis = require("redis");
-const redisClient = redis.createClient(process.env.REDIS_PORT,process.env.REDIS_HOST);
+const redisClient = redis.createClient({
+    port:process.env.REDIS_PORT,
+    host:process.env.REDIS_HOST,
+    name:process.env.REDIS_DB,
+    password:process.env.REDIS_PASSWORD
+});
 
 let map;
 const bookClientMap = "bookMap";
@@ -16,12 +21,12 @@ function getRandomString(stringLength) {
 }
 
 
-redisClient.on('connect', ()=> {
+redisClient.on('connect', () => {
     console.log('Redis client connected');
 });
 
 
-redisClient.get(bookClientMap,  (error, result)=> {
+redisClient.get(bookClientMap, (error, result) => {
     if (error != null || result == null) {
         map = new HashMap()
     } else {
@@ -30,34 +35,25 @@ redisClient.get(bookClientMap,  (error, result)=> {
 })
 
 
-
-const deepLink=(text)=>{
+const deepLink = (text) => {
     return text.split(' ')[1].split('-')[1]
 };
 
 
-const addValueToMap=(key, value) =>{
-    map.set(key,value) 
+const addValueToMap = (key, value) => {
+    map.set(key, value)
 };
 
-const getValueFromMap=(key)=> {
+const getValueFromMap = (key) => {
     return map.get(key)
-   
+
 }
 
 
+module.exports = {
 
-
-
-
-
-
-
-
-module.exports ={
-
-    "getRandomString":getRandomString,
+    "getRandomString": getRandomString,
     "addValueToMap": addValueToMap,
-    "getValueFromMap":getValueFromMap,
-    "deepLink":deepLink
+    "getValueFromMap": getValueFromMap,
+    "deepLink": deepLink
 };

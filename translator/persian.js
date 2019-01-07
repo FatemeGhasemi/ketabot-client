@@ -15,5 +15,6 @@ module.exports = {
     JOIN_CHANNEL_ALERT:"لطفا عضو کانال شوید تا بتوانید به کتاب‌ها دسترسی داشته باشید ",
     CHOOSE_YOUR_WANTED_BOOK_CATEGORY_OR_SEARCH_IT:"موضوع کتاب مورد نظرتان را انتخاب کنید و یا جست و جو کنید. ",
     INLINE_KEYBOARD_TEXT_MESSAGE:"از طریق لینک زیر میتوانید این کتاب را با دوستانتان شریک شوید:"
+
 };
 
