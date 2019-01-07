@@ -162,12 +162,12 @@ const sendAudio = async (partData, msg) => {
         console.log('partData.book ', partData.book);
         console.log(' partData', partData);
         console.log('download link ', downloadLink);
-        let author=book.author;
-        if (book.author !==undefined) {
+        let author=partData.book.author;
+        if (author !==undefined) {
             author = book.author.split(' ').join('_')
         }
-        let bookTitle = book.title;
-        let partTitle = partData.partName;
+        let bookTitle = partData.book.title;
+        let partTitle = partData.book.partName;
         await bot.sendChatAction(msg.from.id, "upload_audio");
         await bot.sendAudio(msg.from.id, downloadLink, {
             title: partTitle,
@@ -175,7 +175,7 @@ const sendAudio = async (partData, msg) => {
             caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
         });
     } catch (e) {
-        throw e.message
+        console.log("sendAudio ERROR: ",e.message)
     }
 };
 
@@ -189,7 +189,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     if (description !== "") {
         msgMiddleText += description + " \n\n"
     }
-    if (author !== "") {
+    if (author !==undefined) {
         author = author.split(' ').join('_');
         msgMiddleText += "#" + author + "\n"
     }
@@ -206,21 +206,12 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
 const handleDownloadBookParts = async (msg, callback_data) => {
     let randomString = callback_data.link;
     let partData = utils.getValueFromMap(randomString);
-    bot.getChatMember(process.env.CHAT_ID, msg.from.id).then(async (result) => {
-        if (result.status !== "kicked" && result.status !== "left") {
-            await sendAudio(partData, msg);
-            await userRequests.createUser(msg.from);
-            return;
-        }
-        await bot.sendMessage(msg.from.id, translator.translate("JOIN_CHANNEL_ALERT") + "\n\n" + process.env.BOT_USERNAME)
+    await sendAudio(partData, msg);
 
-    }).catch(async (error) => {
-        console.log("error of getChatMember:", error);
-        await sendAudio(partData, msg);
-        userRequests.downloadCount({
-            "telegramId": msg.from.id
-        });
+    userRequests.downloadCount({
+        "telegramId": msg.from.id
     });
+
 };
 
 
@@ -246,7 +237,6 @@ const handleMoreBookCategory = async (msg, callback_data) => {
 
 const handleMoreBookDetails = async (msg,callback_data) => {
     try {
-
         let foundBook = await bookRequest.findBookByTitle(callback_data.category, callback_data.begin + 10, 10);
         let bookList = foundBook.books;
         let bookLength1 = bookList.length;
@@ -267,6 +257,7 @@ const handleMoreBookDetails = async (msg,callback_data) => {
 
 const handleCallbackDataCases = async (msg, callback_data) => {
     try {
+        await userRequests.createUser(msg.from);
         switch (callback_data.type) {
             case getBookDetail:
                 await handleGetBookDetailsCallbackQuery(msg, callback_data);
@@ -281,7 +272,7 @@ const handleCallbackDataCases = async (msg, callback_data) => {
                 break;
 
             case moreBookTitle:
-                await handleMoreBookDetails(msg)
+                await handleMoreBookDetails(msg,callback_data)
                 break;
         }
     } catch (e) {

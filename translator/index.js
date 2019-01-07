@@ -22,12 +22,21 @@ const translate = (word, language = PERSIAN) => {
 
 const categoryMapping = {
     'story': 'داستان',
-    'foreignStory': 'داستان خارجی'
+    'foreignStory': 'داستان خارجی',
+    'poem': "شعر",
+    "philosophy": "فلسفه",
+    "shortStory": "داستان کوتاه"
+
+
 }
 
 const reverseCategoryMapping = {
     'داستان': 'story',
-    'داستان خارجی': 'foreignStory'
+    'داستان خارجی': 'foreignStory',
+    "شعر": 'poem',
+    "فلسفه": "philosophy",
+    "داستان کوتاه": "shortStory"
+
 }
 
 
