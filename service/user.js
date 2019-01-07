@@ -5,6 +5,10 @@ const createUser = async (userData) => {
     const result =  await axios({
         method: 'POST',
         url: process.env.BASE_URL + '/users',
+        headers: {
+            "content-Type": "application/json",
+            "admin-token": process.env.ADMIN_CODE
+        },
         data: {
             "telegramId": userData.id,
             "firstName": userData.first_name,

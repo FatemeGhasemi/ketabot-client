@@ -5,10 +5,10 @@ const createBook = async (data) => {
     try {
         const result=await axios({
             method: 'POST',
-            url: "http://localhost:3001/api/v1/books",
+            url: process.env.BASE_URL+"/books",
             headers: {
                 "content-Type": "application/json",
-                "admin-token": "kdjhsalkdj823rhkdjhsdaf"
+                "admin-token": process.env.ADMIN_CODE
             },
             data: {
                 "title": data.title,
