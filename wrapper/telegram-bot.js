@@ -12,9 +12,9 @@ const moreBookCategory = "mbc";
 const buildInLineKeyboardToShowBookParts = (bookData) => {
     let inlineKeyboardArray = [];
     bookData.message.parts.forEach(part => {
-        console.log("parts:",part)
+        console.log("parts:",part);
         const randomString = utils.getRandomString(10);
-        console.log('bookData' ,bookData)
+        console.log('bookData' ,bookData);
         redisUtility.addValueToMap(randomString, { book: bookData.message, partName: part.partName});
         const callback_data = {
             "type": downloadBooksParts,
@@ -36,14 +36,10 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
 };
 
 
-const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin =0) => {
-    let inlineKeyboardArray = [];
-    let type = "";
-    let callback_data;
-    let bookList = booksData.books;
+const create_keyboard = (bookList,inlineKeyboardArray,callback_data)=>{
     bookList.forEach(book => {
         console.log("each book of bookList: ", book);
-        let callback_data = {
+        callback_data = {
             "type": getBookDetail,
             "id": book._id
         };
@@ -54,6 +50,15 @@ const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin =0) 
         });
         inlineKeyboardArray.push(keyBoardRow)
     });
+};
+
+const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin =0) => {
+    let inlineKeyboardArray = [];
+    let type = "";
+    let callback_data;
+    let bookList = booksData.books;
+    create_keyboard(bookList,inlineKeyboardArray,callback_data);
+
 
 
 
@@ -80,15 +85,10 @@ const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin =0) 
         }
         keyBoardRow.push({text: translator.translate("MORE_OPTIONS"), callback_data: JSON.stringify(callback_data)});
         inlineKeyboardArray.push(keyBoardRow)
-
-
-
     }
-
     const keyboardStr = JSON.stringify({
         inline_keyboard: inlineKeyboardArray
     });
-
     return {parse_mode: "Markdown", reply_markup: JSON.parse(keyboardStr)};
 };
 

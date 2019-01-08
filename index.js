@@ -3,7 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 let bot;
 if (process.env.NODE_ENV === 'production') {
     bot = new TelegramBot(process.env.BOT_TOKEN);
-    bot.setWebHook(process.env.BASE_URL + bot.token).then(console.log("webHook set for bot"));
+    bot.setWebHook(process.env.HEROKU_URL + bot.token).then(console.log("webHook set for bot"));
 } else {
     bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
 }
@@ -105,12 +105,11 @@ const handleDetailsMessage = async (msg) => {
     } catch (e) {
         console.log("handleDetailsMessage err:", e.message)
     }
-
 };
 
 
 const messageHandler = async (msg) => {
-
+    console.log("msg.text: ",msg.text)
     if (msg.text === "/start" || msg.text === "start") {
         try {
             await handleStartCommand(msg);
