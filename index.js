@@ -1,6 +1,20 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
+
+
+let bot;
+
+const setBotWebHook = async () => {
+    if (process.env.NODE_ENV === 'production') {
+        bot = new TelegramBot(process.env.BOT_TOKEN);
+        await bot.setWebHook(process.env.HEROKU_URL + bot.token);
+    } else {
+        bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
+    }
+};
+
+setBotWebHook().then(console.log("bot is connected"));
+
 
 const utils = require('./utils');
 const translator = require("./translator");
@@ -162,8 +176,8 @@ const sendAudio = async (partData, msg) => {
         console.log('partData.book ', partData.book);
         console.log(' partData', partData);
         console.log('download link ', downloadLink);
-        let author=partData.book.author;
-        if (author !==undefined) {
+        let author = partData.book.author;
+        if (author !== undefined) {
             author = book.author.split(' ').join('_')
         }
         let bookTitle = partData.book.title;
@@ -175,7 +189,7 @@ const sendAudio = async (partData, msg) => {
             caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
         });
     } catch (e) {
-        console.log("sendAudio ERROR: ",e.message)
+        console.log("sendAudio ERROR: ", e.message)
     }
 };
 
@@ -189,7 +203,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     if (description !== "") {
         msgMiddleText += description + " \n\n"
     }
-    if (author !==undefined) {
+    if (author !== undefined) {
         author = author.split(' ').join('_');
         msgMiddleText += "#" + author + "\n"
     }
@@ -235,7 +249,7 @@ const handleMoreBookCategory = async (msg, callback_data) => {
 };
 
 
-const handleMoreBookDetails = async (msg,callback_data) => {
+const handleMoreBookDetails = async (msg, callback_data) => {
     try {
         let foundBook = await bookRequest.findBookByTitle(callback_data.category, callback_data.begin + 10, 10);
         let bookList = foundBook.books;
@@ -272,7 +286,7 @@ const handleCallbackDataCases = async (msg, callback_data) => {
                 break;
 
             case moreBookTitle:
-                await handleMoreBookDetails(msg,callback_data)
+                await handleMoreBookDetails(msg, callback_data)
                 break;
         }
     } catch (e) {
