@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 // Heroku routes from port :443 to $PORT
 // Add URL of your app to env variable or enable Dyno Metadata
 // to get this automatically
-    const bot = new TelegramBot(process.env.BOT_TOKEN, options);
+    bot = new TelegramBot(process.env.BOT_TOKEN, options);
     const webHookUrl = `${process.env.HEROKU_URL}/bot${process.env.BOT_TOKEN}`
 // See: https://devcenter.heroku.com/articles/dyno-metadata
     console.log('webHook url  ',  webHookUrl)
