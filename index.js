@@ -1,19 +1,12 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-
-
 let bot;
-
-const setBotWebHook = async () => {
-    if (process.env.NODE_ENV === 'production') {
-        bot = new TelegramBot(process.env.BOT_TOKEN);
-        await bot.setWebHook(process.env.HEROKU_URL + bot.token);
-    } else {
-        bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
-    }
-};
-
-setBotWebHook().then(console.log("bot is connected"));
+if (process.env.NODE_ENV === 'production') {
+    bot = new TelegramBot(process.env.BOT_TOKEN);
+    bot.setWebHook(process.env.HEROKU_URL + bot.token).then(console.log("webHook set for bot"));
+} else {
+    bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
+}
 
 
 const utils = require('./utils');
@@ -166,15 +159,15 @@ bot.on("message", async (msg) => {
 });
 
 const generateDownloadLink = (bookPath, partTitle) => {
-    return `${process.env.CDN_BASE_URL}/${bookPath}/${partTitle}.mp3`
+    return `${process.env.CDN_BASE_URL}/${bookPath}/${partTitle}.mp3`.split(' ').join('_')
 }
 
 const sendAudio = async (partData, msg) => {
     try {
         let book = partData.book;
         const downloadLink = generateDownloadLink(book.path, partData.partName)
-        console.log('partData.book ', partData.book);
-        console.log(' partData', partData);
+        // console.log('partData.book ', partData.book);
+        // console.log(' partData', partData);
         console.log('download link ', downloadLink);
         let author = partData.book.author;
         if (author !== undefined) {
