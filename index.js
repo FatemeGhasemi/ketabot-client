@@ -2,18 +2,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 let bot;
 if (process.env.NODE_ENV === 'production') {
-    const options = {
-        webHook: {
-            port: process.env.PORT
-        }
-    };
-    bot = new TelegramBot(process.env.BOT_TOKEN, options);
-    /**
-     * For setting webHook in heroku apps , see below link
-     * {@link https://github.com/yagop/node-telegram-bot-api/blob/master/examples/webhook/heroku.js GitHub}.
-     */
-    const webHookUrl = `${process.env.HEROKU_URL}/bot${process.env.BOT_TOKEN}`
-    bot.setWebHook(webHookUrl).then(console.log("webHook has been set for bot"));
+    setWebHook();
 } else {
     bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
 }
@@ -35,8 +24,22 @@ const moreBookDetails = "mbd";
 const moreBookCategory = "mbc";
 
 
+function setWebHook() {
+    const options = {
+        webHook: {
+            port: process.env.PORT
+        }
+    };
+    bot = new TelegramBot(process.env.BOT_TOKEN, options);
+    /**
+     * For setting webHook in heroku apps , see below link
+     * {@link https://github.com/yagop/node-telegram-bot-api/blob/master/examples/webhook/heroku.js GitHub}.
+     */
+    const webHookUrl = `${process.env.HEROKU_URL}/bot${process.env.BOT_TOKEN}`
+    bot.setWebHook(webHookUrl).then(console.log("webHook has been set for bot"));
+}
+
 const showMainMenu = async (msg, text) => {
-    try {
         await bot.sendMessage(msg.from.id, text, {
             "reply_markup": JSON.stringify({
                 "keyboard": [
@@ -48,9 +51,6 @@ const showMainMenu = async (msg, text) => {
                 ]
             })
         })
-    } catch (e) {
-        throw e.message
-    }
 };
 
 
@@ -121,43 +121,23 @@ const handleDetailsMessage = async (msg) => {
 const messageHandler = async (msg) => {
     console.log("msg.text: ", msg.text)
     if (msg.text === "/start" || msg.text === "start") {
-        try {
             await handleStartCommand(msg);
-        } catch (e) {
-            throw e
-        }
     }
 
     if (msg.text.includes("start=id-")) {
-        try {
             await handleDeepLink(msg);
-        } catch (e) {
-            throw e.message
-        }
     }
 
     if (!categoriesArray.includes(msg.text) && (msg.text !== "/start" || msg.text !== "start")) {
-        try {
             await handleDetailsMessage(msg);
-        } catch (e) {
-            throw e.message
-        }
     }
 
     if (categoriesArray.includes(msg.text)) {
-        try {
             await handleCategoryMessage(msg);
-        } catch (e) {
-            throw e.message
-        }
     }
 
     if (msg.text === translator.translate("SEARCH")) {
-        try {
             bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
-        } catch (e) {
-            throw e.message
-        }
     }
 };
 
