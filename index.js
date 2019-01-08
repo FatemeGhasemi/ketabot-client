@@ -8,7 +8,7 @@ if (process.env.NODE_ENV === 'production') {
     bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
 }
 
-
+const redisUtility = require('./redis/redis-utility');
 const utils = require('./utils');
 const translator = require("./translator");
 const userRequests = require('./service/user');
@@ -54,7 +54,6 @@ const handleStartCommand = async (msg) => {
         await userRequests.createUser(msg.from);
         await showMainMenu(msg, translator.translate("CHOOSE_YOUR_WANTED_BOOK_CATEGORY_OR_SEARCH_IT"))
     } catch (e) {
-
         console.log('handleStartCommand error ', e)
     }
 };
@@ -212,7 +211,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
 
 const handleDownloadBookParts = async (msg, callback_data) => {
     let randomString = callback_data.link;
-    let partData = utils.getValueFromMap(randomString);
+    let partData = redisUtility.getValueFromMap(randomString);
     await sendAudio(partData, msg);
 
     userRequests.downloadCount({

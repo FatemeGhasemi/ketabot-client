@@ -1,5 +1,7 @@
 const translator = require("../translator");
-const utils = require("../utils")
+const utils = require("../utils");
+const redisUtility = require('../redis/redis-utility');
+
 const getBookDetail = "gBD";
 const downloadBooksParts = "dBP";
 const moreBookTitle = "mbt";
@@ -13,7 +15,7 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
         console.log("parts:",part)
         const randomString = utils.getRandomString(10);
         console.log('bookData' ,bookData)
-        utils.addValueToMap(randomString, { book: bookData.message, partName: part.partName});
+        redisUtility.addValueToMap(randomString, { book: bookData.message, partName: part.partName});
         const callback_data = {
             "type": downloadBooksParts,
             "link": randomString
