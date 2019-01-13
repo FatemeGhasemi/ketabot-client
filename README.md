@@ -1,4 +1,8 @@
 # Ketabot-client
+This is a bot for downloading audio-books, you can bot in here: https://t.me/ketaabot
+(bot is still has bugs and is under development)
+
+This bot use this Api for getting books https://ketabot.herokuapp.com/api-docs (this projects is also open source . https://github.com/FatemeGhasemi/ketabot-server)
 
 ## Running locally 
  * First of all create a `.env` file in root of project with content like below:
