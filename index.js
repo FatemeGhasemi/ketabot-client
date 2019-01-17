@@ -122,7 +122,7 @@ const handleDetailsMessage = async (msg) => {
 
 
 const messageHandler = async (msg) => {
-    console.log("msg.text: ", msg.text)
+    await userRequests.createUser(msg.from);
     if (msg.text === "/start" || msg.text === "start") {
         await handleStartCommand(msg);
     }
@@ -149,12 +149,11 @@ bot.on("message", async (msg) => {
     await messageHandler(msg)
 });
 
-const generateDownloadLink = (bookPath, partTitle) => {
-    return `${process.env.CDN_BASE_URL}/${bookPath}/${partTitle}.mp3`.split(' ').join('_')
-}
+
 
 const sendAudio = async (partData, msg) => {
     try {
+        userRequests.downloadCount(msg.from);
         let book = partData.book;
         let bookTitle = book.title.split(" ").join("_");
         let partTitle = partData.partName;
@@ -162,7 +161,7 @@ const sendAudio = async (partData, msg) => {
         if (author !== "") {
             author = book.author.split(' ').join('_');
         }
-        const downloadLink = generateDownloadLink(book.path, partData.partName);
+        const downloadLink = utils.generateDownloadLink(book.path, partData.partName);
         console.log('download link ', downloadLink);
         await bot.sendChatAction(msg.from.id, "upload_audio");
         await bot.sendAudio(msg.from.id, downloadLink
@@ -174,11 +173,6 @@ const sendAudio = async (partData, msg) => {
     } catch (e) {
         console.log("sendAudio ERROR: ", e.message)
     }
-};
-
-
-const deepLinkGenerator = (bookId) => {
-    return process.env.BOT_USERNAME + "/?start=id-" + bookId
 };
 
 
@@ -196,7 +190,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     if (description !== "") {
         msgFinalText += "\n" + description
     }
-    msgFinalText += translator.translate("SHARE_BY_THIS_LINK_MESSAGE") + " \n\n " + deepLinkGenerator(foundBookData.message._id);
+    msgFinalText += translator.translate("SHARE_BY_THIS_LINK_MESSAGE") + " \n\n " + utils.deepLinkGenerator(foundBookData.message._id);
     const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
     await userRequests.createUser(msg.from);
     await bot.sendMessage(msg.from.id, msgFinalText, inLineKeyboard);
@@ -207,11 +201,9 @@ const handleDownloadBookParts = async (msg, callback_data) => {
     let randomString = callback_data.link;
     let partData = redisUtility.getValueFromMap(randomString);
     await sendAudio(partData, msg);
-
     userRequests.downloadCount({
         "telegramId": msg.from.id
     });
-
 };
 
 
@@ -252,12 +244,11 @@ const handleMoreBookDetails = async (msg, callback_data) => {
     } catch (e) {
         console.log("handleMoreBookDetails ERROR: ", e.message)
     }
-
 };
+
 
 const handleCallbackDataCases = async (msg, callback_data) => {
     try {
-        await userRequests.createUser(msg.from);
         switch (callback_data.type) {
             case getBookDetail:
                 await handleGetBookDetailsCallbackQuery(msg, callback_data);

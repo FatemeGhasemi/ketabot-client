@@ -12,7 +12,20 @@ const findBookIdFromText = (text) => {
 };
 
 
+const deepLinkGenerator = (bookId) => {
+    return process.env.BOT_USERNAME + "/?start=id-" + bookId
+};
+
+
+const generateDownloadLink = (bookPath, partTitle) => {
+    return `${process.env.CDN_BASE_URL}/${bookPath}/${partTitle}.mp3`.split(' ').join('_')
+}
+
+
+
 module.exports = {
     getRandomString,
-    findBookIdFromText
+    findBookIdFromText,
+    deepLinkGenerator,
+    generateDownloadLink
 };
