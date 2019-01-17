@@ -1,10 +1,13 @@
 require('dotenv').config();
+const Sentry = require('@sentry/node');
 const TelegramBot = require('node-telegram-bot-api');
 let bot;
 if (process.env.NODE_ENV === 'production') {
     setWebHook();
+    Sentry.init({dsn: process.env.HEROCU_DSN});
 } else {
     bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
+    Sentry.init({dsn: process.env.LOCAL_DSN})
 }
 
 const redisUtility = require('./redis/redis-utility');
@@ -40,17 +43,17 @@ function setWebHook() {
 }
 
 const showMainMenu = async (msg, text) => {
-        await bot.sendMessage(msg.from.id, text, {
-            "reply_markup": JSON.stringify({
-                "keyboard": [
-                    [translator.translate("SEARCH")],
-                    [translator.translate("STORY")],
-                    [translator.translate("FOREIGN")],
-                    [translator.translate("SHORT_STORY")],
-                    [translator.translate("POEM")]
-                ]
-            })
+    await bot.sendMessage(msg.from.id, text, {
+        "reply_markup": JSON.stringify({
+            "keyboard": [
+                [translator.translate("SEARCH")],
+                [translator.translate("STORY")],
+                [translator.translate("FOREIGN")],
+                [translator.translate("SHORT_STORY")],
+                [translator.translate("POEM")]
+            ]
         })
+    })
 };
 
 
@@ -70,7 +73,7 @@ const handleStartCommand = async (msg) => {
 
 const handleDeepLink = async (msg) => {
     try {
-        const bookId = utils.deepLink(msg.text);
+        const bookId = utils.findBookIdFromText(msg.text);
         let foundBookData = await bookRequest.findBookById(bookId);
         const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
         await userRequests.createUser(msg.from);
@@ -121,23 +124,23 @@ const handleDetailsMessage = async (msg) => {
 const messageHandler = async (msg) => {
     console.log("msg.text: ", msg.text)
     if (msg.text === "/start" || msg.text === "start") {
-            await handleStartCommand(msg);
+        await handleStartCommand(msg);
     }
 
     if (msg.text.includes("start=id-")) {
-            await handleDeepLink(msg);
+        await handleDeepLink(msg);
     }
 
     if (!categoriesArray.includes(msg.text) && (msg.text !== "/start" || msg.text !== "start")) {
-            await handleDetailsMessage(msg);
+        await handleDetailsMessage(msg);
     }
 
     if (categoriesArray.includes(msg.text)) {
-            await handleCategoryMessage(msg);
+        await handleCategoryMessage(msg);
     }
 
     if (msg.text === translator.translate("SEARCH")) {
-            bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
+        bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
     }
 };
 
@@ -153,47 +156,49 @@ const generateDownloadLink = (bookPath, partTitle) => {
 const sendAudio = async (partData, msg) => {
     try {
         let book = partData.book;
-        const downloadLink = generateDownloadLink(book.path, partData.partName)
-        // console.log('partData.book ', partData.book);
-        // console.log(' partData', partData);
-        console.log('download link ', downloadLink);
+        let bookTitle = book.title.split(" ").join("_");
+        let partTitle = partData.partName;
         let author = partData.book.author;
-        if (author !== undefined) {
-            author = book.author.split(' ').join('_')
+        if (author !== "") {
+            author = book.author.split(' ').join('_');
         }
-        let bookTitle = partData.book.title;
-        let partTitle = partData.book.partName;
+        const downloadLink = generateDownloadLink(book.path, partData.partName);
+        console.log('download link ', downloadLink);
         await bot.sendChatAction(msg.from.id, "upload_audio");
-        await bot.sendAudio(msg.from.id, downloadLink, {
-            title: partTitle,
-            performer: bookTitle,
-            caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
-        });
+        await bot.sendAudio(msg.from.id, downloadLink
+            , {
+                title: partTitle,
+                performer: bookTitle,
+                caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
+            });
     } catch (e) {
         console.log("sendAudio ERROR: ", e.message)
     }
 };
 
 
+const deepLinkGenerator = (bookId) => {
+    return process.env.BOT_USERNAME + "/?start=id-" + bookId
+};
+
+
 const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     let bookId = callback_data.id;
     let foundBookData = await bookRequest.findBookById(bookId);
-    let msgMiddleText = foundBookData.message.title + " \n ";
     let author = foundBookData.message.author;
     let description = foundBookData.message.description;
-    if (description !== "") {
-        msgMiddleText += description + " \n\n"
-    }
-    if (author !== undefined) {
+    let title = foundBookData.message.title.split(" ").join("_");
+    let msgFinalText = title;
+    if (author !== "") {
         author = author.split(' ').join('_');
-        msgMiddleText += "#" + author + "\n"
+        msgFinalText += "\n" + author
     }
-
+    if (description !== "") {
+        msgFinalText += "\n" + description
+    }
+    msgFinalText += translator.translate("SHARE_BY_THIS_LINK_MESSAGE") + " \n\n " + deepLinkGenerator(foundBookData.message._id);
     const inLineKeyboard = telegramBotWrapper.buildInLineKeyboardToShowBookParts(foundBookData);
     await userRequests.createUser(msg.from);
-
-    const msgFinalText = (msgMiddleText + translator.translate("SHARE_BY_THIS_LINK_MESSAGE") + " \n\n " + process.env.BOT_USERNAME + foundBookData.message._id);
-    console.log("msg:", msgFinalText);
     await bot.sendMessage(msg.from.id, msgFinalText, inLineKeyboard);
 };
 
@@ -234,11 +239,11 @@ const handleMoreBookDetails = async (msg, callback_data) => {
     try {
         let foundBook = await bookRequest.findBookByTitle(callback_data.category, callback_data.begin + 10, 10);
         let bookList = foundBook.books;
-        let bookLength1 = bookList.length;
-        if (bookLength1 !== 0) {
+        let bookLength = bookList.length;
+        if (bookLength !== 0) {
             bookList = bookList.reverse();
         }
-        if (!bookList || bookLength1 === 0) {
+        if (!bookList || bookLength === 0) {
             await showMainMenu(msg, translator.translate("THERE_IS_NO_SUCH_A_BOOK"));
             return;
         }
@@ -278,7 +283,7 @@ const handleCallbackDataCases = async (msg, callback_data) => {
 
 bot.on("callback_query", async (msg) => {
     try {
-
+        console.log("msg.txt in callback_query: ", msg.text)
         await bot.answerCallbackQuery(msg.id, "", false);
         let callback_data = JSON.parse(msg.data);
         await handleCallbackDataCases(msg, callback_data)

@@ -7,12 +7,12 @@ function getRandomString(stringLength) {
 }
 
 
-const deepLink = (text) => {
+const findBookIdFromText = (text) => {
     return text.split(' ')[1].split('-')[1]
 };
 
 
 module.exports = {
-    "getRandomString": getRandomString,
-    "deepLink": deepLink
+    getRandomString,
+    findBookIdFromText
 };

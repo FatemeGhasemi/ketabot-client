@@ -10,12 +10,11 @@ const moreBookCategory = "mbc";
 
 
 const buildInLineKeyboardToShowBookParts = (bookData) => {
-    let inlineKeyboardArray = [];
+    const inlineKeyboardArray = [];
     bookData.message.parts.forEach(part => {
-        console.log("parts:",part);
+        console.log("parts:", part);
         const randomString = utils.getRandomString(10);
-        console.log('bookData' ,bookData);
-        redisUtility.addValueToMap(randomString, { book: bookData.message, partName: part.partName});
+        redisUtility.addValueToMap(randomString, {book: bookData.message, partName: part.partName});
         const callback_data = {
             "type": downloadBooksParts,
             "link": randomString
@@ -32,11 +31,10 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
         reply_markup: JSON.parse(keyboardStr),
         disable_web_page_preview: true
     };
-
 };
 
 
-const create_keyboard = (bookList,inlineKeyboardArray,callback_data)=>{
+const createKeyboardForEachBook = (bookList, inlineKeyboardArray, callback_data) => {
     bookList.forEach(book => {
         console.log("each book of bookList: ", book);
         callback_data = {
@@ -52,40 +50,44 @@ const create_keyboard = (bookList,inlineKeyboardArray,callback_data)=>{
     });
 };
 
-const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin =0) => {
+
+const moreThanTenBookHandler = (searchType, type, callback_data, bookList, inlineKeyboardArray, begin) => {
+    let keyBoardRow = [];
+    switch (searchType) {
+        case "category":
+            type = moreBookCategory;
+            callback_data = {
+                "type": type,
+                "category": bookList[0].category,
+                "begin": begin
+            };
+            break;
+
+        case "details":
+            type = moreBookDetails;
+            callback_data = {
+                "type": type,
+                "details": bookList[0].details,
+                "begin": begin
+            };
+            break
+    }
+    keyBoardRow.push({text: translator.translate("MORE_OPTIONS"), callback_data: JSON.stringify(callback_data)});
+    inlineKeyboardArray.push(keyBoardRow)
+};
+
+
+const buildInLineKeyboardToShowSearchedBook = (booksData, searchType, begin = 0) => {
     let inlineKeyboardArray = [];
     let type = "";
     let callback_data;
     let bookList = booksData.books;
-    create_keyboard(bookList,inlineKeyboardArray,callback_data);
-
-
-
+    createKeyboardForEachBook(bookList, inlineKeyboardArray, callback_data);
 
     if (booksData.books.length >= 10) {
-        let keyBoardRow = [];
-        switch (searchType) {
-            case "category":
-                type = moreBookCategory;
-                callback_data = {
-                    "type": type,
-                    "category": bookList[0].category,
-                    "begin": begin
-                };
-                break;
-
-            case "details":
-                type = moreBookDetails;
-                callback_data = {
-                    "type": type,
-                    "details": bookList[0].details,
-                    "begin": begin
-                };
-                break
-        }
-        keyBoardRow.push({text: translator.translate("MORE_OPTIONS"), callback_data: JSON.stringify(callback_data)});
-        inlineKeyboardArray.push(keyBoardRow)
+        moreThanTenBookHandler(searchType, type, callback_data, bookList, inlineKeyboardArray, begin)
     }
+
     const keyboardStr = JSON.stringify({
         inline_keyboard: inlineKeyboardArray
     });

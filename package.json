@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^4.5.0",
     "array-includes": "^3.0.3",
     "axios": "^0.17.1",
     "body-parser": "^1.18.2",
