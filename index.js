@@ -40,17 +40,17 @@ function setWebHook() {
 }
 
 const showMainMenu = async (msg, text) => {
-        await bot.sendMessage(msg.from.id, text, {
-            "reply_markup": JSON.stringify({
-                "keyboard": [
-                    [translator.translate("SEARCH")],
-                    [translator.translate("STORY")],
-                    [translator.translate("FOREIGN")],
-                    [translator.translate("SHORT_STORY")],
-                    [translator.translate("POEM")]
-                ]
-            })
+    await bot.sendMessage(msg.from.id, text, {
+        "reply_markup": JSON.stringify({
+            "keyboard": [
+                [translator.translate("SEARCH")],
+                [translator.translate("STORY")],
+                [translator.translate("FOREIGN")],
+                [translator.translate("SHORT_STORY")],
+                [translator.translate("POEM")]
+            ]
         })
+    })
 };
 
 
@@ -121,23 +121,23 @@ const handleDetailsMessage = async (msg) => {
 const messageHandler = async (msg) => {
     console.log("msg.text: ", msg.text)
     if (msg.text === "/start" || msg.text === "start") {
-            await handleStartCommand(msg);
+        await handleStartCommand(msg);
     }
 
     if (msg.text.includes("start=id-")) {
-            await handleDeepLink(msg);
+        await handleDeepLink(msg);
     }
 
     if (!categoriesArray.includes(msg.text) && (msg.text !== "/start" || msg.text !== "start")) {
-            await handleDetailsMessage(msg);
+        await handleDetailsMessage(msg);
     }
 
     if (categoriesArray.includes(msg.text)) {
-            await handleCategoryMessage(msg);
+        await handleCategoryMessage(msg);
     }
 
     if (msg.text === translator.translate("SEARCH")) {
-            bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
+        bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
     }
 };
 
@@ -152,14 +152,20 @@ const generateDownloadLink = (bookPath, partTitle) => {
 
 const sendAudio = async (partData, msg) => {
     try {
+        console.log('partData: ', partData);
+
         let book = partData.book;
         const downloadLink = generateDownloadLink(book.path, partData.partName)
         // console.log('partData.book ', partData.book);
         // console.log(' partData', partData);
         console.log('download link ', downloadLink);
         let author = partData.book.author;
-        if (author !== undefined) {
+        let caption;
+        let message =process.env.CHAT_ID ;
+        if (author ) {
             author = book.author.split(' ').join('_')
+            caption = "\n\n" + "#" + author + "\n\n " + message
+            message = caption
         }
         let bookTitle = partData.book.title;
         let partTitle = partData.book.partName;
@@ -167,10 +173,10 @@ const sendAudio = async (partData, msg) => {
         await bot.sendAudio(msg.from.id, downloadLink, {
             title: partTitle,
             performer: bookTitle,
-            caption: "\n\n" + "#" + author + "\n\n " + process.env.CHAT_ID
+            caption: message
         });
     } catch (e) {
-        console.log("sendAudio ERROR: ", e.message)
+        console.log("sendAudio ERROR: ", e)
     }
 };
 
@@ -184,7 +190,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
     if (description !== "") {
         msgMiddleText += description + " \n\n"
     }
-    if (author !== undefined) {
+    if (author ) {
         author = author.split(' ').join('_');
         msgMiddleText += "#" + author + "\n"
     }
@@ -200,7 +206,7 @@ const handleGetBookDetailsCallbackQuery = async (msg, callback_data) => {
 
 const handleDownloadBookParts = async (msg, callback_data) => {
     let randomString = callback_data.link;
-    let partData = redisUtility.getValueFromMap(randomString);
+    let partData = await  redisUtility.getUserState(randomString);
     await sendAudio(partData, msg);
 
     userRequests.downloadCount({
@@ -271,13 +277,13 @@ const handleCallbackDataCases = async (msg, callback_data) => {
                 break;
         }
     } catch (e) {
-        console.log(" handleCallbackDataCases err:", e.message)
+        console.log(" handleCallbackDataCases err:", e)
     }
 };
 
 
 bot.on("callback_query", async (msg) => {
-    try {
+    try {handleCallbackDataCases
 
         await bot.answerCallbackQuery(msg.id, "", false);
         let callback_data = JSON.parse(msg.data);

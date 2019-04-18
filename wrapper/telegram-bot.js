@@ -11,11 +11,12 @@ const moreBookCategory = "mbc";
 
 const buildInLineKeyboardToShowBookParts = (bookData) => {
     let inlineKeyboardArray = [];
+    console.log('bookData' ,bookData);
+
     bookData.message.parts.forEach(part => {
         console.log("parts:",part);
         const randomString = utils.getRandomString(10);
-        console.log('bookData' ,bookData);
-        redisUtility.addValueToMap(randomString, { book: bookData.message, partName: part.partName});
+        redisUtility.setUserState(randomString, { book: bookData.message, partName: part.partName});
         const callback_data = {
             "type": downloadBooksParts,
             "link": randomString
