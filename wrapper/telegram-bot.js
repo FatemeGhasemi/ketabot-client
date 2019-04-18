@@ -15,7 +15,7 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
 
     bookData.message.parts.forEach(part => {
         console.log("parts:",part);
-        const randomString = utils.getRandomString(10);
+        const randomString = Date.now()+ utils.getRandomString(10) ;
         redisUtility.setUserState(randomString, { book: bookData.message, partName: part.partName});
         const callback_data = {
             "type": downloadBooksParts,
