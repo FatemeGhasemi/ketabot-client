@@ -126,19 +126,15 @@ const messageHandler = async (msg) => {
     if (msg.text === "/start" || msg.text === "start") {
         await handleStartCommand(msg);
     }
-
     if (msg.text.includes("start=id-")) {
         await handleDeepLink(msg);
     }
-
     if (!categoriesArray.includes(msg.text) && (msg.text !== "/start" || msg.text !== "start")) {
         await handleDetailsMessage(msg);
     }
-
     if (categoriesArray.includes(msg.text)) {
         await handleCategoryMessage(msg);
     }
-
     if (msg.text === translator.translate("SEARCH")) {
         bot.sendMessage(msg.from.id, translator.translate("SEARCH_YOUR_WANTED_BOOK")).then(console.log("msg.text", msg.text));
     }
@@ -148,7 +144,6 @@ const messageHandler = async (msg) => {
 bot.on("message", async (msg) => {
     await messageHandler(msg)
 });
-
 
 
 const sendAudio = async (partData, msg) => {
