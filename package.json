@@ -19,7 +19,7 @@
     "fs": "0.0.1-security",
     "hapi": "^16.6.2",
     "hashmap": "^2.3.0",
-    "mongoose": "^4.13.5",
+    "mongoose": "^5.7.5",
     "node-telegram-bot-api": "^0.28.0",
     "redis": "^2.8.0",
     "request": "^2.81.0",
