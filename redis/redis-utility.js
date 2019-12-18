@@ -1,33 +1,65 @@
 const HashMap = require('hashmap');
 const redis = require("redis");
-const redisClient = redis.createClient({
-    port:process.env.REDIS_PORT,
-    host:process.env.REDIS_HOST,
-    name:process.env.REDIS_DB,
-    password:process.env.REDIS_PASSWORD
-});
 
-let map;
-const bookClientMap = "bookMap";
+let redisClient;
 
-redisClient.get(bookClientMap, function (error, result) {
-    if (error != null || result == null) {
-        map = new HashMap()
-    } else {
-        map = new HashMap(JSON.parse(result))
+const getRedisClient = () => {
+    if (!redisClient) {
+        redisClient = redis.createClient({
+            port: process.env.REDIS_PORT,
+            host: process.env.REDIS_HOST,
+            name: process.env.REDIS_DB,
+            password: process.env.REDIS_PASSWORD
+        });
     }
-});
-
-const addValueToMap = (key, value) => {
-    map.set(key, value)
+    return redisClient
+};
+const getFromRedis = (key) => {
+    return new Promise((resolve, reject) => {
+        getRedisClient().get(key, function (err, result) {
+            if (err) {
+                return reject(err)
+            }
+            console.log('----------Redis : ', JSON.parse(result))
+            resolve(JSON.parse(result))
+        })
+    })
 };
 
-const getValueFromMap = (key) => {
-    return map.get(key)
+
+const setInRedis = (key, data) => {
+    return new Promise((resolve, reject) => {
+        getRedisClient().set(key, JSON.stringify(data), function (err, result) {
+            if (err) {
+                return reject(err)
+            }
+            resolve(result)
+        })
+    })
+};
+
+
+const removeFromRedis = (key) => {
+    return new Promise((resolve, reject) => {
+        getRedisClient().del(key, function (err, result) {
+            if (err) {
+                return reject(err)
+            }
+            resolve()
+        })
+    })
+}
+
+const setUserState = (key, value) => {
+    return setInRedis(key, value)
+};
+
+const getUserState = (key) => {
+    return getFromRedis(key)
 };
 
 
 module.exports = {
-    "addValueToMap": addValueToMap,
-    "getValueFromMap": getValueFromMap,
+    setUserState,
+    getUserState,
 };
