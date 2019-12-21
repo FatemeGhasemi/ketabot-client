@@ -11,7 +11,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const redisUtility = require('./redis/redis-utility');
-const utils = require('./utils');
+const utils = require("./utility/utils");
 const translator = require("./translator");
 const userRequests = require('./service/user');
 const bookRequest = require('./service/book');
@@ -64,6 +64,7 @@ bot.getMe().then(function (me) {
 
 const handleStartCommand = async (msg) => {
     try {
+        console.log("msg.from1: ",msg.from)
         await userRequests.createUser(msg.from);
         await showMainMenu(msg, translator.translate("CHOOSE_YOUR_WANTED_BOOK_CATEGORY_OR_SEARCH_IT"))
     } catch (e) {
@@ -124,6 +125,7 @@ const handleDetailsMessage = async (msg) => {
 const messageHandler = async (msg) => {
     await userRequests.createUser(msg.from);
     if (msg.text === "/start" || msg.text === "start") {
+        console.log("hi to start ")
         await handleStartCommand(msg);
     }
     if (msg.text.includes("start=id-")) {

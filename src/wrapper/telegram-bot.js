@@ -1,5 +1,5 @@
 const translator = require("../translator");
-const utils = require("../utils");
+const utils = require("../utility/utils");
 const redisUtility = require('../redis/redis-utility');
 
 const getBookDetail = "gBD";
