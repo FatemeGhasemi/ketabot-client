@@ -2,8 +2,6 @@ const axios = require('axios');
 
 
 const createUser = async (userData) => {
-  console.log("hi to client create user")
-  console.log("url>>>>>>>",process.env.BASE_URL+'/users')
 
   const result = await axios({
     method: 'POST',
@@ -13,10 +11,10 @@ const createUser = async (userData) => {
       "admin-token": process.env.ADMIN_CODE
     },
     data: {
-      "telegramId": userData.id,
-      "firstName": userData.first_name,
-      "lastName": userData.last_name,
-      "telegramUserName": userData.username
+      telegramId: userData.id,
+      firstName: userData.first_name,
+      lastName: userData.last_name,
+      telegramUserName: userData.username
     }
   });
   console.log("result create user client>>>>>>>>", result)
@@ -27,10 +25,10 @@ const createUser = async (userData) => {
 };
 
 
-const downloadCount = (userData) => {
+const increaseDownloadCount = (userData) => {
   return axios({
     method: 'PUT',
-    url: process.env.BASE_URL + '/users',
+    url: process.env.BASE_URL + '/users/' + userData.id + "/increaseDownloadCount",
     headers: {
       "content-Type": "application/json",
       "admin-token": process.env.ADMIN_CODE
@@ -40,4 +38,4 @@ const downloadCount = (userData) => {
 };
 
 
-module.exports = {createUser, downloadCount}
+module.exports = {createUser, increaseDownloadCount}

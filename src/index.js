@@ -153,7 +153,7 @@ bot.on("message", async (msg) => {
 
 const sendAudio = async (partData, msg) => {
   try {
-    userRequests.downloadCount(msg.from);
+    userRequests.increaseDownloadCount(msg.from);
     let book = partData.book;
     let bookTitle = book.title.split(" ").join("_");
     let partTitle = partData.partName;
@@ -201,7 +201,7 @@ const handleDownloadBookParts = async (msg, callback_data) => {
   let randomString = callback_data.link;
   let partData = redisUtility.getValueFromMap(randomString);
   await sendAudio(partData, msg);
-  userRequests.downloadCount({
+  userRequests.increaseDownloadCount({
     "telegramId": msg.from.id
   });
 };

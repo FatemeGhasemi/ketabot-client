@@ -11,24 +11,24 @@ const createBook = async (data) => {
                 "admin-token": process.env.ADMIN_CODE
             },
             data: {
-                "title": data.title,
-                "path": data.path,
-                "cost": data.cost,
-                "description": data.description,
-                "publisher": data.publisher,
-                "author": data.author,
-                "publishedYear": data.publishedYear,
-                "translator": data.translator,
-                "voiceActor": data.voiceActor,
-                "category": data.category,
-                "tags": data.tags,
-                "language": data.language,
-                "downloadCount": data.downloadCount,
-                "type": data.type,
-                "cover": data.cover,
-                "parts": data.parts,
-                "sourceLink": data.sourceLink,
-                "isActive": data.isActive
+                title: data.title,
+                path: data.path,
+                cost: data.cost,
+                description: data.description,
+                publisher: data.publisher,
+                author: data.author,
+                publishedYear: data.publishedYear,
+                translator: data.translator,
+                voiceActor: data.voiceActor,
+                category: data.category,
+                tags: data.tags,
+                language: data.language,
+                downloadCount: data.downloadCount,
+                type: data.type,
+                cover: data.cover,
+                parts: data.parts,
+                sourceLink: data.sourceLink,
+                isActive: data.isActive
             }
         });
         return result.data
@@ -90,7 +90,7 @@ const findBookById = async (id) => {
         method: 'GET',
         url: process.env.BASE_URL + '/books',
         params: {
-            _id: id,
+           bookId: id,
         }
     });
     return result.data
