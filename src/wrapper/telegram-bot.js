@@ -16,8 +16,8 @@ const buildInLineKeyboardToShowBookParts = (bookData) => {
         const randomString = utils.getRandomString(10);
         redisUtility.addValueToMap(randomString, {book: bookData.message, partName: part.partName});
         const callback_data = {
-            "type": downloadBooksParts,
-            "link": randomString
+            type: downloadBooksParts,
+            link: randomString
         };
         const KeyboardRow = [];
         KeyboardRow.push({text: part.partName, callback_data: JSON.stringify(callback_data)});
@@ -38,8 +38,8 @@ const createKeyboardForEachBook = (bookList, inlineKeyboardArray, callback_data)
     bookList.forEach(book => {
         console.log("each book of bookList: ", book);
         callback_data = {
-            "type": getBookDetail,
-            "id": book._id
+            type: getBookDetail,
+            id: book._id
         };
         let keyBoardRow = [];
         keyBoardRow.push({
@@ -57,18 +57,18 @@ const moreThanTenBookHandler = (searchType, type, callback_data, bookList, inlin
         case "category":
             type = moreBookCategory;
             callback_data = {
-                "type": type,
-                "category": bookList[0].category,
-                "begin": begin
+                type,
+                category: bookList[0].category,
+                begin
             };
             break;
 
         case "details":
             type = moreBookDetails;
             callback_data = {
-                "type": type,
-                "details": bookList[0].details,
-                "begin": begin
+                type,
+                details: bookList[0].details,
+                begin
             };
             break
     }

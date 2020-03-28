@@ -14,10 +14,6 @@ redisClient.get(bookClientMap,  (error, result)=> {
 
 
 
-
-
-
-
 const getRedisClient = () => {
   if (!redisClient) {
     redisClient = redis.createClient({
@@ -29,6 +25,9 @@ const getRedisClient = () => {
   }
   return redisClient
 };
+
+
+
 const getFromRedis = (key) => {
   return new Promise((resolve, reject) => {
     getRedisClient().get(key, function (err, result) {
