@@ -21,7 +21,7 @@
     "hashmap": "^2.3.0",
     "mongoose": "^4.13.5",
     "node-telegram-bot-api": "^0.28.0",
-    "redis": "^2.8.0",
+    "redis": "^3.1.1",
     "request": "^2.81.0",
     "safe-buffer": "^5.1.1"
   }
